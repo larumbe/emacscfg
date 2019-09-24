@@ -30,8 +30,8 @@
   (global-set-key (kbd "C-z C-l") 'windmove-right)
 
     ;;; quick editing of config files
-  (global-set-key (kbd "C-z .") (keybinding (find-file (concat default-directory) "dotemacs.org")))
-  (global-set-key (kbd "C-z .") (keybinding (find-file (concat default-directory) "dotemacs.org")))
+  (global-set-key (kbd "C-z .") (keybinding (find-file (concat default-directory "dotemacs.org") )))
+  (global-set-key (kbd "C-z ,") (keybinding (dired default-directory)))
 
   ;; parenthesis
   (electric-pair-mode t)
@@ -75,7 +75,7 @@
   (global-set-key (kbd "C-z C-z") 'repeat)
   (global-set-key (kbd "C-z SPC") 'delete-trailing-whitespace)
   (global-set-key (kbd "C-z C-SPC") 'delete-horizontal-space)
-  (global-set-key (kbd "C-x C-b") 'ibuffer)
+  (global-set-key (kbd "C-z RET") 'just-one-space)
 
   ;; the blinking cursor is nothing, but an annoyance
   (blink-cursor-mode -1)
@@ -125,21 +125,6 @@
   (global-set-key (kbd "C-x C-p") 'previous-buffer)
   (global-set-key (kbd "C-x C-n") 'next-buffer)
 
-  ;;; Next window and previous window fast switching
-  ;;; Redefine it for windows on different frames, see doc for next-window
-  (defun my:next-window (args)
-    "Switches to the next window"
-    (interactive "P")
-    (select-window (next-window)))
-  (global-set-key (kbd "C-M-\\") 'my:next-window)
-  (defun my:previous-window (args)
-    "Switches to the previous window"
-    (interactive "P")
-    (select-window (previous-window)))
-  (global-set-key (kbd "C-M-'") 'my:previous-window)
-
-  (global-set-key (kbd "C-x q") 'delete-other-windows)
-
   (defun my:split-window-below-switch-point ()
     "Splits window and moves the point to save time"
     (interactive)
@@ -163,15 +148,93 @@
   ;;; frames
   (global-set-key (kbd "C-x o") 'other-frame)
   (global-set-key (kbd "C-z f") 'make-frame)
+
+  ;;; screen size
+  (global-set-key (kbd "C-z C-;") 'text-scale-decrease)
+  (global-set-key (kbd "C-z C-'") 'text-scale-increase)
+
+  ;; buffer list
+  (global-set-key (kbd "C-x C-b") 'ibuffer)
+
+  ;;; backups
+  (setq backup-by-copying t
+	backup-directory-alist '(("." . (concat default-directory "backups")))
+	delete-old-versions t
+	kept-new-versions 6
+	kept-old-versions 2
+	version-control t)
+
+  ;;; winner mode configuration
+  (winner-mode)
+  (define-key winner-mode-map (kbd "C-z C-]") 'winner-undo)
+  (define-key winner-mode-map (kbd "C-z C-\\") 'winner-redo)
+
+  ;;; Don't ask for confirmation before killing an unmodified buffer
+  (defun volatile-kill-buffer ()
+    "Kill current buffer unconditionally."
+    (interactive)
+    (let ((buffer-modified-p nil))
+      (kill-buffer (current-buffer))))
+  (global-set-key (kbd "C-x k") 'volatile-kill-buffer)
+
+  ;; No ask to kill buffer
+  (setq buffer-offer-save nil)
+
+  (defun narrow-or-widen-dwim (p)
+    "Widen if buffer is narrowed, narrow-dwim otherwise.
+  Dwim means: region, org-src-block, org-subtree, or
+  defun, whichever applies first. Narrowing to
+  org-src-block actually calls `org-edit-src-code'.
+  http://endlessparentheses.com/emacs-narrow-or-widen-dwim.html
+
+  With prefix P, don't widen, just narrow even if buffer
+  is already narrowed."
+    (interactive "P")
+    (declare (interactive-only))
+    (cond ((and (buffer-narrowed-p) (not p)) (widen))
+	  ((region-active-p)
+	   (narrow-to-region (region-beginning)
+			     (region-end)))
+	  ((derived-mode-p 'org-mode)
+	   ;; `org-edit-src-code' is not a real narrowing
+	   ;; command. Remove this first conditional if
+	   ;; you don't want it.
+	   (cond ((ignore-errors (org-edit-src-code) t)
+		  (delete-other-windows))
+		 ((ignore-errors (org-narrow-to-block) t))
+		 (t (org-narrow-to-subtree))))
+	  ((derived-mode-p 'latex-mode)
+	   (LaTeX-narrow-to-environment))
+	  (t (narrow-to-defun))))
+
+  (global-set-key (kbd "C-z n") 'narrow-or-widen-dwim)
+
+  (global-set-key (kbd "C-z l") 'load-file)
+  (global-set-key (kbd "C-z C-f") 'fill-region)
+
+  ;;; dired
+  (global-set-key (kbd "C-x C-d") 'wdired-change-to-wdired-mode)
+  (global-set-key (kbd "M-\\") '(lambda () (interactive) (dired default-directory)))
+  (global-set-key (kbd "C-x /") '(lambda () (interactive) (dired "~/")))
 #+END_SRC
 
 * helm
+#+BEGIN_SRC emacs-lisp
+  ;; (use-package helm
+  ;;   :ensure t
+  ;;   )
+
+#+END_SRC
 * appearance
 #+BEGIN_SRC emacs-lisp
   ;;; global theme customisation
   (setq custom-enabled-themes '(solarized-dark))
   (load-theme 'solarized-dark t)
   (global-set-key (kbd "C-z M-l") 'load-theme)
+
+  ;;; hacker font
+  (set-frame-font "Hack-14" nil t)
+
 #+END_SRC
 * shell
 * windows
@@ -182,7 +245,6 @@
 #+BEGIN_SRC emacs-lisp
   (global-set-key (kbd "C-z C-o") 'browse-url)
 #+END_SRC
-
 
 * server
 #+BEGIN_SRC emacs-lisp
