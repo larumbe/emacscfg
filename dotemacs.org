@@ -1,0 +1,190 @@
+#+TITLE: DotEmacs
+#+AUTHOR: Adrian Larumbe
+
+* macros
+#+BEGIN_SRC emacs-lisp
+  (defmacro keybinding (f)
+    `(lambda ()
+       (interactive)
+       ,f))
+#+END_SRC
+* basic customisation
+#+BEGIN_SRC emacs-lisp
+    ;;; easy package list access
+  (global-set-key (kbd "C-x C-M-p") 'package-list-packages)
+
+    ;;; new global prefix
+  (global-unset-key (kbd "C-z"))
+
+    ;;; appearance
+  (tool-bar-mode -1)
+  (menu-bar-mode -1)
+  (if (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
+  (setq inhibit-startup-message t)
+  (column-number-mode t)
+
+    ;;; quick window switching
+  (global-set-key (kbd "C-z C-k") 'windmove-up)
+  (global-set-key (kbd "C-z C-j") 'windmove-down)
+  (global-set-key (kbd "C-z C-h") 'windmove-left)
+  (global-set-key (kbd "C-z C-l") 'windmove-right)
+
+    ;;; quick editing of config files
+  (global-set-key (kbd "C-z .") (keybinding (find-file (concat default-directory) "dotemacs.org")))
+  (global-set-key (kbd "C-z .") (keybinding (find-file (concat default-directory) "dotemacs.org")))
+
+  ;; parenthesis
+  (electric-pair-mode t)
+  (show-paren-mode t)
+
+    ;;; forward yanking
+  (defun yank-pop-forwards (arg)
+    (interactive "p")
+    (yank-pop (- arg)))
+  (global-set-key (kbd "C-M-y") 'yank-pop-forwards)
+
+    ;;; bash deletion
+  (global-unset-key (kbd "C-h"))
+  (global-set-key (kbd "C-h") 'delete-backward-char)
+  (global-set-key (kbd "C-w") 'backward-kill-word)
+
+  ;; Help key bindings
+  (global-set-key (kbd "C-q") 'help-command)
+  (global-set-key (kbd "C-q C-c") 'describe-key-briefly)
+  (global-set-key (kbd "C-q C-w") 'where-is)
+  (global-set-key (kbd "C-q g") 'find-function)
+
+  ;; vanilla keystrokes
+  (global-set-key (kbd "C-M-]") 'eval-expression)
+  (global-set-key (kbd "C-x C-k") 'kill-region)
+  (global-set-key (kbd "C-z \\") 'pop-tag-mark)
+  (global-set-key (kbd "C-x l") 'kill-whole-line)
+  (global-set-key (kbd "C-z M-=") 'count-lines-page)
+  (global-set-key (kbd "C-M-SPC") 'recenter-top-bottom)
+  (global-set-key (kbd "C-q C-q") 'quoted-insert)
+
+    ;;; switch to previous buffer
+  (defun switch-to-previous-buffer ()
+    "Goes to the most recent previous buffer"
+    (interactive)
+    (switch-to-buffer (other-buffer (current-buffer) 1)))
+  (global-set-key (kbd "C-x p") 'switch-to-previous-buffer)
+
+    ;;; repetition and deletion
+  (global-set-key (kbd "C-.") 'repeat)
+  (global-set-key (kbd "C-z C-z") 'repeat)
+  (global-set-key (kbd "C-z SPC") 'delete-trailing-whitespace)
+  (global-set-key (kbd "C-z C-SPC") 'delete-horizontal-space)
+  (global-set-key (kbd "C-x C-b") 'ibuffer)
+
+  ;; the blinking cursor is nothing, but an annoyance
+  (blink-cursor-mode -1)
+
+  ;; other window scroll'
+  (global-set-key (kbd "C-x P") 'mark-page)
+  (global-set-key (kbd "C-x C") 'set-goal-column)
+  (global-set-key (kbd "C-z C-n") 'scroll-other-window)
+  (global-set-key (kbd "C-z C-p") 'scroll-other-window-down)
+
+  ;; paragraph motion
+  (global-set-key (kbd "M-p") 'backward-paragraph)
+  (global-set-key (kbd "M-n") 'forward-paragraph)
+
+  ;; better bindings for beginning and end of buffer
+  (global-set-key (kbd "C-z C-,") 'beginning-of-buffer)
+  (global-set-key (kbd "C-z C-.") 'end-of-buffer)
+
+    ;;; straight to line
+  (global-set-key (kbd "C-x C-j") 'goto-line)
+
+    ;;; minibuffer
+  (defalias 'yes-or-no-p 'y-or-n-p)
+
+  ;; smooth scrolling
+  (setq scroll-step 1)
+
+    ;;; other window
+
+    ;;; keep as fall-back combo for when CAPS+TAB is taken over by the minor mode
+  (global-set-key (kbd "C-x C-x") 'other-window)
+  (global-set-key (kbd "<C-tab>") 'other-window)
+  (global-set-key (kbd "<C-M-tab>") (keybinding (other-window -1)))
+
+    ;;; line truncation
+  (global-set-key (kbd "C-z t") 'toggle-truncate-lines)
+
+    ;;; replace region with yank
+  (delete-selection-mode)
+
+    ;;; killing and marking
+  (global-set-key (kbd "C-x w") 'append-next-kill)
+
+  ;; please assign C-x C-h
+
+  ;;; fast buffer switch
+  (global-set-key (kbd "C-x C-p") 'previous-buffer)
+  (global-set-key (kbd "C-x C-n") 'next-buffer)
+
+  ;;; Next window and previous window fast switching
+  ;;; Redefine it for windows on different frames, see doc for next-window
+  (defun my:next-window (args)
+    "Switches to the next window"
+    (interactive "P")
+    (select-window (next-window)))
+  (global-set-key (kbd "C-M-\\") 'my:next-window)
+  (defun my:previous-window (args)
+    "Switches to the previous window"
+    (interactive "P")
+    (select-window (previous-window)))
+  (global-set-key (kbd "C-M-'") 'my:previous-window)
+
+  (global-set-key (kbd "C-x q") 'delete-other-windows)
+
+  (defun my:split-window-below-switch-point ()
+    "Splits window and moves the point to save time"
+    (interactive)
+    (split-window-below)
+    (other-window 1))
+  (global-set-key (kbd "C-x C-y") 'my:split-window-below-switch-point)
+
+  (defun my:split-window-right-switch-point ()
+    "Splits window and moves the point to save time"
+    (interactive)
+    (split-window-horizontally)
+    (other-window 1))
+  (global-set-key (kbd "C-x y") 'my:split-window-right-switch-point)
+
+  ;;; Shouldn't have to reach out long for this
+  (global-set-key (kbd "C-x c") 'delete-other-windows)
+
+  ;;; keyboard macros
+  (global-set-key (kbd "C-x M-q") 'kbd-macro-query)
+
+  ;;; frames
+  (global-set-key (kbd "C-x o") 'other-frame)
+  (global-set-key (kbd "C-z f") 'make-frame)
+#+END_SRC
+
+* helm
+* appearance
+#+BEGIN_SRC emacs-lisp
+  ;;; global theme customisation
+  (setq custom-enabled-themes '(solarized-dark))
+  (load-theme 'solarized-dark t)
+  (global-set-key (kbd "C-z M-l") 'load-theme)
+#+END_SRC
+* shell
+* windows
+** motion mode
+* version control
+* programs
+** browser
+#+BEGIN_SRC emacs-lisp
+  (global-set-key (kbd "C-z C-o") 'browse-url)
+#+END_SRC
+
+
+* server
+#+BEGIN_SRC emacs-lisp
+  (server-start)
+#+END_SRC

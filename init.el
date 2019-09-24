@@ -6,6 +6,7 @@
 ;;; Code:
 
 (require 'package)
+
 (setq-default
  load-prefer-newer t
  package-enable-at-startup nil)
@@ -20,11 +21,13 @@
   (package-install 'use-package t))
 (setq-default
  use-package-always-defer t
- use-package-always-ensure t)
+ use-package-always-ensure t
+ package-user-dir (concat default-directory "elpa")
+ )
 
 ;;; Latest Org
 (use-package org :ensure org-plus-contrib)
 
-(org-babel-load-file (expand-file-name "dotemacs.org" user-emacs-directory))
+(org-babel-load-file (expand-file-name "dotemacs.org"))
 
 ;;; init.el ends here
