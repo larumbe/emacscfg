@@ -220,10 +220,28 @@
 
 * helm
 #+BEGIN_SRC emacs-lisp
-  ;; (use-package helm
-  ;;   :ensure t
-  ;;   )
-
+  (use-package helm
+    :ensure t
+    :requires helm-config
+    :preface
+    (require 'helm-config)
+    :bind
+    (("C-l" . helm-command-prefix)
+     ([remap execute-extended-command] . helm-M-x)
+     ([remap find-file] . helm-find-files)
+     ([remap switch-to-buffer] . helm-buffers-list)
+     ("C-z C-e" . helm-M-x)
+     :map helm-command-map
+     ("g" . helm-ag)
+     ("C-g" . helm-do-grep-ag)
+     ("w" . helm-swoop)
+     ("C-w" . helm-multi-swoop)
+     ("y" . helm-all-mark-rings)
+     :map helm-map
+     ("C-w" . backward-kill-word)
+     ("C-h" . backward-delete-char))
+    :hook
+    (after-init . helm-mode))
 #+END_SRC
 * appearance
 #+BEGIN_SRC emacs-lisp
