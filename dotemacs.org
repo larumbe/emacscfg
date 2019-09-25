@@ -222,6 +222,7 @@
 #+BEGIN_SRC emacs-lisp
   (use-package helm
     :ensure t
+    :after (helm-config)
     :requires helm-config
     :preface
     (require 'helm-config)
@@ -237,12 +238,100 @@
      ("w" . helm-swoop)
      ("C-w" . helm-multi-swoop)
      ("y" . helm-all-mark-rings)
+     ("M-p" . helm-package)
+     ("u" . helm-unicode)
      :map helm-map
      ("C-w" . backward-kill-word)
      ("C-h" . backward-delete-char))
+    :config
+    (global-unset-key (kbd "C-x c"))
+    (global-set-key (kbd "C-x c") 'delete-other-windows)
     :hook
     (after-init . helm-mode))
 #+END_SRC
+* org
+#+BEGIN_SRC emacs-lisp
+  (use-package org
+    :ensure t
+    :preface
+    (require 'org-agenda)
+    :init
+    (progn
+      (define-prefix-command 'org-prefix nil "Org: a(agenda), j(clock), c(capture), d(dired)"))
+    :bind-keymap
+    ("C-z o" . org-prefix)
+    :bind
+    (("C-z J" . org-clock-goto)
+     :map org-mode-map
+     ("<s-stab>" . org-global-cycle)
+     ("C-c l" . org-store-link)
+     ("C-c c" . org-capture)
+     ("C-c ." . org-priority)
+     ("C-c i" . org-iswitchb)
+     ("C-c t" . org-time-stamp)
+     ("C-c f" . org-metaright)
+     ("C-c b" . org-metaleft)
+     ("C-c n" . org-metadown)
+     ("C-c p" . org-metaup)
+     ("C-c '" . org-insert-todo-heading)
+     ("M-p" . org-table-previous-field)
+     ("M-n" . org-table-next-field)
+     ("<C-tab>" . other-window)
+     ("C-c s" . org-insert-todo-subheading)
+     ("C-c C-," . org-promote-subtree)
+     ("C-c C-." . org-demote-subtree)
+     ("C-c e" . org-edit-src-code)
+     :map org-agenda-mode-map
+     ("C-c m" . org-agenda-month-view)
+     ("C-c y" . org-agenda-year-view)
+     :map org-src-mode-map
+     ("C-c C-k" . nil)
+     ("C-c e" . org-edit-src-exit)
+     ("C-c k" . org-edit-src-abort)
+     ("C-c e" . org-edit-src-exit)
+     :map org-prefix
+     ("a" . org-agenda)
+     ("c" . org-capture)
+     ("j" . org-clock-goto)
+     ("d" . (lambda () (interactive) (dired "~/org")))
+     )
+    :custom
+    (org-directory "~/org/")
+    (org-log-done 'time)
+    (org-default-notes-file "~/org/remember.org")
+    (org-capture-templates '(
+			     ("t" "Todo" entry (file+headline
+						"" "Tasks") "* TODO %?\n %i %T\n")
+			     ("e" "Emacs" entry (file
+						 "~/org/emacs.org") "* TODO %?\n %i %T\n")
+			     ("p" "Programming" entry (file+headline
+						       "" "Programming") "* TODO %?\n %i")
+			     ("r" "Reads" entry (file+headline
+						 "" "Reads") "* TODO %?\n %i %T\n")
+			     ("w" "Workflow" entry (file+headline
+						    "" "Workflow") "* TODO %?\n %i %T\n")
+			     ("j" "Journal" entry (file+datetree
+						   "~/org/journal.org") "* TODO %?\n")
+
+			     ("c" "Chinese" entry (file "~/org/projects/languages/chinwords.org")
+			      "* %?\n Pinyin: \n Meaning: ")
+
+			     ("b" "Bookmark" entry (file "~/org/bookmarks.org")
+			      "* %?\n:PROPERTIES:\n:CREATED: %U\n:END:\n\n" :empty-lines 1)
+			     ))
+    (org-clock-persist 'history)
+    (org-deadline-warning-days 0)
+    :config
+    (org-clock-persistence-insinuate)
+    :hook
+    (org-mode yas-minor-mode))
+
+#+END_SRC
+
+* programming languages
+** emacs-lisp
+
+
 * appearance
 #+BEGIN_SRC emacs-lisp
   ;;; global theme customisation
@@ -254,6 +343,7 @@
   (set-frame-font "Hack-14" nil t)
 
 #+END_SRC
+
 * shell
 * windows
 ** motion mode
