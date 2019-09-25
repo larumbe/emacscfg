@@ -25,9 +25,6 @@
  package-user-dir (concat default-directory "elpa")
  )
 
-;;; Latest Org
-(use-package org :ensure org-plus-contrib)
-
 (org-babel-load-file (expand-file-name "dotemacs.org"))
 
 ;;; init.el ends here
