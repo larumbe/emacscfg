@@ -293,8 +293,7 @@
      ("a" . org-agenda)
      ("c" . org-capture)
      ("j" . org-clock-goto)
-     ("d" . (lambda () (interactive) (dired "~/org")))
-     )
+     ("d" . (lambda () (interactive) (dired "~/org"))))
     :custom
     (org-directory "~/org/")
     (org-log-done 'time)
@@ -327,10 +326,27 @@
     (org-mode yas-minor-mode))
 
 #+END_SRC
-
-* programming languages
+* projectile
+#+BEGIN_SRC emacs-lisp
+  (use-package projectile
+    :ensure t
+    :hook
+    (after-init . projectile-global-mode)
+    :bind-keymap
+    ("C-c p" . projectile-command-map)
+    :custom
+    (projectile-completion-system 'helm)
+    (projectile-indexing-method 'alien)
+    (projectile-switch-project-action 'projectile-dired)
+    :config
+    (helm-projectile-on)
+    :bind
+    (:map projectile-command-map
+    ("C-g" . projectile-grep)
+    ("s r" . projectile-ripgrep)))
+#+END_SRC
+* programming
 ** emacs-lisp
-
 
 * appearance
 #+BEGIN_SRC emacs-lisp
