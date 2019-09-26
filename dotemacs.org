@@ -220,8 +220,8 @@ is already narrowed."
 
   ;;; dired
   (global-set-key (kbd "C-x C-d") 'wdired-change-to-wdired-mode)
-  (global-set-key (kbd "M-\\") '(lambda () (interactive) (dired default-directory)))
-  (global-set-key (kbd "C-x /") '(lambda () (interactive) (dired "~/")))
+  (global-set-key (kbd "M-\\")  (keybinding (dired default-directory)))
+  (global-set-key (kbd "C-x /") (keybinding (dired "~/")))
 
   ;;; appearance
   (global-set-key (kbd "C-z M-l") 'load-theme)
