@@ -7,10 +7,12 @@
 
 (require 'package)
 
+(setq user-emacs-directory default-directory)
+
 (setq-default
  load-prefer-newer t
  package-enable-at-startup nil
- package-user-dir (concat default-directory "elpa"))
+ package-user-dir (concat user-emacs-directory "elpa"))
 
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 (add-to-list 'package-archives '("org" . "https://orgmode.org/elpa/") t)

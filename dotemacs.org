@@ -60,8 +60,8 @@ is already narrowed."
   (global-set-key (kbd "C-z C-l") 'windmove-right)
 
     ;;; quick editing of config files
-  (global-set-key (kbd "C-z .") (keybinding (find-file (concat default-directory "dotemacs.org") )))
-  (global-set-key (kbd "C-z ,") (keybinding (dired default-directory)))
+  (global-set-key (kbd "C-z .") (keybinding (find-file (concat user-emacs-directory "dotemacs.org") )))
+  (global-set-key (kbd "C-z ,") (keybinding (dired user-emacs-directory)))
 
   ;; parenthesis
   (electric-pair-mode t)
@@ -188,7 +188,7 @@ is already narrowed."
 
   ;;; backups
   (setq backup-by-copying t
-	backup-directory-alist '(("." . (concat default-directory "backups")))
+	backup-directory-alist '(("." . "~/emacsbackups"))
 	delete-old-versions t
 	kept-new-versions 6
 	kept-old-versions 2
@@ -228,6 +228,15 @@ is already narrowed."
   (load-theme 'deeper-blue t)
   (set-frame-font "Hack-14" nil t)
 
+  ;;; shell
+  (global-set-key (kbd "C-z ;") 'shell-command)
+  (global-set-key (kbd "C-z |") 'shell-command-on-region)
+
+  ;; undoing
+  (global-set-key (kbd "C-;") 'undo)
+
+  ;; open line
+  (global-set-key (kbd "M-RET") 'open-line)
 #+END_SRC
 
 * helm
@@ -243,7 +252,7 @@ is already narrowed."
      ([remap execute-extended-command] . helm-M-x)
      ([remap find-file] . helm-find-files)
      ([remap switch-to-buffer] . helm-buffers-list)
-     ("C-z C-e" . helm-M-x)
+     ("C-o" . helm-M-x)
      :map helm-command-map
      ("g" . helm-ag)
      ("C-g" . helm-do-grep-ag)
@@ -264,12 +273,13 @@ is already narrowed."
 * org
 #+BEGIN_SRC emacs-lisp
   (use-package org
-    :ensure t
+    :ensure org-plus-contrib
     :preface
     (require 'org-agenda)
     :init
     (progn
       (define-prefix-command 'org-prefix nil "Org: a(agenda), j(clock), c(capture), d(dired)"))
+    :mode ("\\.org" . org-mode)
     :bind-keymap
     ("C-z o" . org-prefix)
     :bind
@@ -334,42 +344,62 @@ is already narrowed."
     (org-deadline-warning-days 0)
     :config
     (org-clock-persistence-insinuate)
-    :hook
-    (org-mode yas-minor-mode))
+    ;; :hook
+    ;; (org-mode yas-minor-mode)
+    )
 
 #+END_SRC
 * projectile
+https://github.com/bbatsov/projectile
+
 #+BEGIN_SRC emacs-lisp
   (use-package helm-projectile
     :ensure t)
 
   (use-package projectile
     :ensure t
+    :diminish
+
     :init
-    (require 'helm-projectile)
+    (progn
+      (require 'helm-projectile)
+      (setq projectile-cache-file (concat user-emacs-directory "projectile-cache"))
+      (setq projectile-known-projects-file (concat user-emacs-directory "projectile-bookmarks"))
+      (require 'recentf)
+      (setq recentf-save-file (concat user-emacs-directory "recentfiles"))
+      (recentf-mode))
+
     :hook
     (after-init . projectile-global-mode)
+
     :config
-    (helm-projectile-on)  
+    (helm-projectile-on)
+    (projectile-global-mode)
+
     :bind-keymap
     ("C-c p" . projectile-command-map)
-    :custom
-    (projectile-completion-system 'helm)
-    (projectile-indexing-method 'alien)
-    (projectile-switch-project-action 'projectile-dired)
+
     :bind
     (("C-z p" . helm-projectile-switch-project)
      ("C-z e" . helm-projectile-recentf)
      ("C-z f" . helm-projectile-find-file)
      :map projectile-command-map
 	  ("C-g" . projectile-grep)
-	  ("s r" . projectile-ripgrep)))
+	  ("s r" . projectile-ripgrep))
+
+    :custom
+    (projectile-completion-system 'helm)
+    (projectile-indexing-method 'alien)
+    (projectile-switch-project-action 'projectile-dired)
+    (projectile-sort-order 'recently-active)
+    (projectile-enable-caching t))
 #+END_SRC
 * completion
 ** company
 #+BEGIN_SRC emacs-lisp
   (use-package company
     :ensure t
+    :diminish
     :init
     (global-company-mode)
     :hook
@@ -393,20 +423,91 @@ is already narrowed."
     ;; add frontends
     )
 #+END_SRC
+** yasnippet
+#+BEGIN_SRC  emacs-lisp
+  (use-package yasnippet
+    :ensure t
+    :diminish yas-minor-mode
+    :init
+    (progn
+      (use-package yasnippet-snippets))
+    :hook
+    ((prog-mode . yas-minor-mode)
+     (org-mode . yas-minor-mode))
+    :custom
+    ;; (yas-snippet-dirs (concat (car (file-expand-wildcards (concat package-user-dir "/yasnippet-snippets*")))  "/snippets"))
+    (yas-verbosity 2)
+    :config
+    (yas-load-directory (concat (car (file-expand-wildcards (concat package-user-dir "/yasnippet-snippets*")))  "/snippets"))
+    (yas-reload-all))
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp
+  (use-package helm-c-yasnippet
+    :ensure t
+    :init
+    (require 'yasnippet)
+    :bind
+    (("C-z C-y" . helm-yas-complete)))
+#+END_SRC
+
+* version control
+** diffing
+#+BEGIN_SRC emacs-lisp
+  (use-package ediff			;
+    :ensure t
+    :custom
+    (ediff-window-setup-function 'ediff-setup-windows-plain)
+    (ediff-split-window-function 'split-window-horizontally)
+    :bind
+    ("C-z d" . vc-ediff)
+    ("C-z C-d" . ediff)
+    ("C-z b" . ediff-buffers))
+#+END_SRC
+** magit
+ #+BEGIN_SRC emacs-lisp
+   (use-package magit
+     :ensure t
+     :bind (("C-z m"   . magit-status)
+	    ("C-z M-d" . magit-dispatch-popup)
+	    :map magit-mode-map
+	    ("C-c c"   . magit-ediff-compare)
+	    ("C"   . magit-checkout)
+	    (";"   . magit-dispatch-popup))
+     :config (progn
+	       (use-package magit-p4)
+	       (magit-define-popup-action 'magit-ediff-popup ?S "Show staged" 'magit-ediff-show-staged)
+	       (magit-define-popup-action 'magit-ediff-popup ?U "Show unstaged" 'magit-ediff-show-unstaged)))
+ #+END_SRC
+** diff-hl
+#+BEGIN_SRC emacs-lisp
+  (use-package diff-hl
+    :ensure t
+    )
+
+#+END_SRC
 * programming
 ** emacs-lisp
 
 * appearance
+** theme
 #+BEGIN_SRC emacs-lisp
   (use-package solarized-theme
     :ensure t
     :init
     (load-theme 'solarized-dark t))
 #+END_SRC
+
+** modeline
+#+BEGIN_SRC emacs-lisp
+  (use-package powerline
+    :ensure t
+    :init
+    (require 'powerline)
+    (powerline-default-theme))
+
+#+END_SRC
 * shell
-* windows
-** motion mode
-* version control
 * programs
 ** browser
 #+BEGIN_SRC emacs-lisp
