@@ -370,6 +370,8 @@ is already narrowed."
 #+BEGIN_SRC emacs-lisp
   (use-package company
     :ensure t
+    :init
+    (global-company-mode)
     :hook
     (after-init . global-company-mode)
     (program-mode . company-mode)
