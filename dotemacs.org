@@ -360,7 +360,7 @@ is already narrowed."
     :bind
     (("C-z p" . helm-projectile-switch-project)
      ("C-z e" . helm-projectile-recentf)
-     ("C-z p" . helm-projectile-find-file)
+     ("C-z f" . helm-projectile-find-file)
      :map projectile-command-map
 	  ("C-g" . projectile-grep)
 	  ("s r" . projectile-ripgrep)))
