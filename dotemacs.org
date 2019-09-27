@@ -364,6 +364,32 @@ is already narrowed."
 	  ("C-g" . projectile-grep)
 	  ("s r" . projectile-ripgrep)))
 #+END_SRC
+* completion
+** company
+#+BEGIN_SRC emacs-lisp
+  (use-package company
+    :ensure t
+    :hook
+    (after-init . global-company-mode)
+    (program-mode . company-mode)
+    :bind
+    (("C-z c" . company-complete)
+     ("C-z C-M-f" . company-files)
+     :map
+     company-active-map
+     ("C-w" . backward-kill-word)
+     ("C-h" . delete-backward-char)
+     ("C-q" . company-show-doc-buffer)
+     ("C-l" . company-show-location)
+     ("C-n" . company-select-next)
+     ("C-p" . company-select-previous))
+    :custom
+    (company-require-match nil)
+    (company-tooltip-align-annotations t)
+    (company-require-match 'never)
+    ;; add frontends
+    )
+#+END_SRC
 * programming
 ** emacs-lisp
 
