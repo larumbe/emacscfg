@@ -177,7 +177,7 @@ is already narrowed."
 
   ;;; frames
   (global-set-key (kbd "C-x o") 'other-frame)
-  (global-set-key (kbd "C-z f") 'make-frame)
+  (global-set-key (kbd "C-x f") 'make-frame)
 
   ;;; screen size
   (global-set-key (kbd "C-z C-;") 'text-scale-decrease)
@@ -360,6 +360,7 @@ is already narrowed."
     :bind
     (("C-z p" . helm-projectile-switch-project)
      ("C-z e" . helm-projectile-recentf)
+     ("C-z p" . helm-projectile-find-file)
      :map projectile-command-map
 	  ("C-g" . projectile-grep)
 	  ("s r" . projectile-ripgrep)))
