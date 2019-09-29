@@ -690,6 +690,7 @@ https://github.com/bbatsov/projectile
 	  ("C-c f C-d" . hs-hide-block)
 	  ("C-c f C-e" . hs-toggle-hiding)))
 #+END_SRC
+** gdb
 * languages
 ** elisp
 https://www.reddit.com/r/emacs/comments/54pvg4/usepackage_with_builtin_modes/
@@ -706,10 +707,10 @@ https://www.reddit.com/r/emacs/comments/54pvg4/usepackage_with_builtin_modes/
      (emacs-lisp-mode . rainbow-delimiters-mode)
      (emacs-lisp-mode . diff-hl-mode)
      (emacs-lisp-mode . superword-mode)
-     (emacs-lisp-mode . c-turn-on-eldoc-mode)
-     (emacs-lisp-mode . helm-gtags-mode)
+     (emacs-lisp-mode . eldoc-mode)
      (emacs-lisp-mode . flycheck-mode)
      (emacs-lisp-mode . elisp-slime-nav-mode)
+     (emacs-lisp-mode . paredit-mode)
      :bind
      (("C-z C-v" . eval-expression)
       :map emacs-lisp-mode-map
@@ -741,7 +742,6 @@ https://www.reddit.com/r/emacs/comments/54pvg4/usepackage_with_builtin_modes/
   (use-package elisp-slime-nav
     :ensure t)
 #+END_SRC
-
 
 
 
