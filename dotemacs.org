@@ -669,8 +669,8 @@ https://github.com/bbatsov/projectile
 #+BEGIN_SRC emacs-lisp
   (use-package hideif
     :ensure t
-    :custom
-    (hide-ifdef-mode-prefix-key "\C-cf"))
+    :bind-keymap
+    ( "C-c C-f" . hide-ifdef-mode-submap))
 #+END_SRC
 ** hideshow
 #+BEGIN_SRC emacs-lisp
