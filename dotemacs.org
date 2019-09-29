@@ -11,32 +11,38 @@
 #+END_SRC
 ** functions
 #+BEGIN_SRC emacs-lisp
-(defun narrow-or-widen-dwim (p)
-  "Widen if buffer is narrowed, narrow-dwim otherwise.
-Dwim means: region, org-src-block, org-subtree, or
-defun, whichever applies first. Narrowing to
-org-src-block actually calls `org-edit-src-code'.
-http://endlessparentheses.com/emacs-narrow-or-widen-dwim.html
+  (defun narrow-or-widen-dwim (p)
+    "Widen if buffer is narrowed, narrow-dwim otherwise.
+  Dwim means: region, org-src-block, org-subtree, or
+  defun, whichever applies first. Narrowing to
+  org-src-block actually calls `org-edit-src-code'.
+  http://endlessparentheses.com/emacs-narrow-or-widen-dwim.html
 
-With prefix P, don't widen, just narrow even if buffer
-is already narrowed."
-  (interactive "P")
-  (declare (interactive-only))
-  (cond ((and (buffer-narrowed-p) (not p)) (widen))
-	((region-active-p)
-	 (narrow-to-region (region-beginning)
-			   (region-end)))
-	((derived-mode-p 'org-mode)
-	 ;; `org-edit-src-code' is not a real narrowing
-	 ;; command. Remove this first conditional if
-	 ;; you don't want it.
-	 (cond ((ignore-errors (org-edit-src-code) t)
-		(delete-other-windows))
-	       ((ignore-errors (org-narrow-to-block) t))
-	       (t (org-narrow-to-subtree))))
-	((derived-mode-p 'latex-mode)
-	 (LaTeX-narrow-to-environment))
-	(t (narrow-to-defun))))
+  With prefix P, don't widen, just narrow even if buffer
+  is already narrowed."
+    (interactive "P")
+    (declare (interactive-only))
+    (cond ((and (buffer-narrowed-p) (not p)) (widen))
+	  ((region-active-p)
+	   (narrow-to-region (region-beginning)
+			     (region-end)))
+	  ((derived-mode-p 'org-mode)
+	   ;; `org-edit-src-code' is not a real narrowing
+	   ;; command. Remove this first conditional if
+	   ;; you don't want it.
+	   (cond ((ignore-errors (org-edit-src-code) t)
+		  (delete-other-windows))
+		 ((ignore-errors (org-narrow-to-block) t))
+		 (t (org-narrow-to-subtree))))
+	  ((derived-mode-p 'latex-mode)
+	   (LaTeX-narrow-to-environment))
+	  (t (narrow-to-defun))))
+
+  ;;; Open scratch buffer
+  (defun switch-to-temporary-buffer ()
+    "Switches to scratch temporary buffer"
+    (interactive)
+    (pop-to-buffer "temp"))
 #+END_SRC
 * basic customisation
 #+BEGIN_SRC emacs-lisp
@@ -134,23 +140,17 @@ is already narrowed."
   ;; smooth scrolling
   (setq scroll-step 1)
 
-    ;;; other window
-
-    ;;; keep as fall-back combo for when CAPS+TAB is taken over by the minor mode
-  (global-set-key (kbd "C-x C-x") 'other-window)
+  ;;; other window
   (global-set-key (kbd "<C-tab>") 'other-window)
+  ;;; keep as fall-back combo for when CAPS+TAB is taken over by the minor mode
+  (global-set-key (kbd "C-x C-x") 'other-window)
   (global-set-key (kbd "<C-M-tab>") (keybinding (other-window -1)))
 
     ;;; line truncation
   (global-set-key (kbd "C-z t") 'toggle-truncate-lines)
 
-    ;;; replace region with yank
-  (delete-selection-mode)
-
     ;;; killing and marking
   (global-set-key (kbd "C-x w") 'append-next-kill)
-
-  ;; please assign C-x C-h
 
   ;;; fast buffer switch
   (global-set-key (kbd "C-x C-p") 'previous-buffer)
@@ -218,6 +218,7 @@ is already narrowed."
   (global-set-key (kbd "C-z l") 'load-file)
   ;;; filling
   (global-set-key (kbd "C-z C-f") 'fill-region)
+  (global-set-key (kbd "C-z M-f") 'auto-fill-mode)
 
   ;;; dired
   (global-set-key (kbd "C-x C-d") 'wdired-change-to-wdired-mode)
@@ -262,7 +263,20 @@ is already narrowed."
   ;; indentation
   (global-set-key (kbd "C-z i") 'indent-relative)
   (global-set-key (kbd "C-z C-i") 'indent-region)
+
+  ;; searching and replacing
+  (global-set-key (kbd "C-z C-s") 'isearch-forward-symbol-at-point)
+  (global-set-key (kbd "C-z x") 'query-replace)
+  (delete-selection-mode)   ;;; replace region with yank
+
+  ;; print working dir
+  (global-set-key (kbd "C-z w") 'pwd)
+
+  (global-set-key (kbd "C-z C-b") 'switch-to-temporary-buffer)
 #+END_SRC
+
+#+RESULTS:
+: t
 
 * motion
 * search
@@ -291,6 +305,15 @@ is already narrowed."
     :bind
     (("C-z r" . iresize-mode)))
 #+END_SRC
+** ace
+#+BEGIN_SRC emacs-lisp
+  (use-package ace-window
+    :ensure t
+    :bind
+    ("M-o" . ace-window)
+    :custom
+     aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
+#+END_SRC
 * helm
 #+BEGIN_SRC emacs-lisp
   (use-package helm
@@ -314,7 +337,7 @@ is already narrowed."
      ("M-p" . helm-package)
      ("u" . helm-unicode)
      ("o" . helm-occur)
-     ("C-z C-a" . helm-global-mark-ring)
+     ("n" . helm-register)
      :map helm-map
      ("C-w" . backward-kill-word)
      ("C-h" . backward-delete-char))
@@ -332,11 +355,11 @@ is already narrowed."
     (use-package helm-gtags
       :ensure t
       :hook
-      (dired-mode-hook . helm-gtags-mode)
-      (eshell-mode-hook . helm-gtags-mode)
-      (c-mode-hook . helm-gtags-mode)
-      (c++-mode-hook . helm-gtags-mode)
-      (asm-mode-hook . helm-gtags-mode)
+      (dired-mode . helm-gtags-mode)
+      (eshell-mode . helm-gtags-mode)
+      (c-mode . helm-gtags-mode)
+      (c++-mode . helm-gtags-mode)
+      (asm-mode . helm-gtags-mode)
       :bind
       (:map helm-gtags-mode-map
 	    ("M-." . helm-gtags-dwim)
@@ -378,6 +401,28 @@ is already narrowed."
     (:map helm-command-map
     ("w" . helm-swoop)
     ("C-w" . helm-multi-swoop)))
+#+END_SRC
+* marking
+#+BEGIN_SRC emacs-lisp
+    (use-package thing-cmds
+      :ensure t
+      :config
+      (defun mark-a-word-or-thing (arg)
+	"Select word on or before current point, and move point to beginning of word.
+
+      With a prefix ARG, first prompts for type of things and select ARG things
+      but you need to move the point to the beginnig of thing first.
+
+      But if a thing has been selected, then extend the selection by one thing
+      on the other side of the point.
+      (So to select backwards, select to the right first.)"
+	(interactive "P")
+	(if (or arg mark-active)
+	    (call-interactively 'mark-thing)
+	  (skip-syntax-backward "w_")
+	  (mark-thing 'symbol)))
+      :bind
+      ("C-M-w" . mark-a-word-or-thing))
 #+END_SRC
 * org
 #+BEGIN_SRC emacs-lisp
@@ -452,10 +497,7 @@ is already narrowed."
     (org-clock-persist 'history)
     (org-deadline-warning-days 0)
     :config
-    (org-clock-persistence-insinuate)
-    ;; :hook
-    ;; (org-mode yas-minor-mode)
-    )
+    (org-clock-persistence-insinuate))
 
 #+END_SRC
 * projectile
@@ -467,8 +509,7 @@ https://github.com/bbatsov/projectile
 
   (use-package projectile
     :ensure t
-    :diminish
-
+    :diminish (projectile-mode projectile-global-mode)
     :init
     (progn
       (require 'helm-projectile)
@@ -480,7 +521,7 @@ https://github.com/bbatsov/projectile
 
     :hook
     (after-init . projectile-global-mode)
-    
+
     :config
     (helm-projectile-on)
     (projectile-global-mode)
@@ -537,7 +578,7 @@ https://github.com/bbatsov/projectile
 #+BEGIN_SRC  emacs-lisp
   (use-package yasnippet
     :ensure t
-    :diminish yas-minor-mode
+    :diminish yas-minor-mode yas-global-mode
     :init
     (progn
       (use-package yasnippet-snippets))
@@ -564,8 +605,17 @@ https://github.com/bbatsov/projectile
 * version control
 ** diffing
 #+BEGIN_SRC emacs-lisp
-  (use-package ediff			;
+  (use-package ediff
     :ensure t
+    :init
+    (defun my:before-ediff ()
+      (window-configuration-to-register 'p))
+    (defun my:after-ediff ()
+      (jump-to-register 'p))
+    :hook
+    (ediff-load-hook . my:before-ediff)
+    (ediff-quit-hook . ediff-cleanup-mess)
+    (ediff-quit-hook . my:after-ediff)
     :custom
     (ediff-window-setup-function 'ediff-setup-windows-plain)
     (ediff-split-window-function 'split-window-horizontally)
@@ -604,9 +654,9 @@ https://github.com/bbatsov/projectile
     (global-undo-tree-mode t)
     :bind
     (("C-z u" . undo-tree-mode)
-    :map undo-tree-map
-    ("C-;" . undo-tree-undo)
-    ("M-;" . undo-tree-redo)))
+     :map undo-tree-map
+     ("C-;" . nil)
+     ("C-/" . nil)))
 #+END_SRC
 * programming
 ** syntax checking
@@ -621,6 +671,24 @@ https://github.com/bbatsov/projectile
     :ensure t
     :custom
     (hide-ifdef-mode-prefix-key "\C-cf"))
+#+END_SRC
+** hideshow
+#+BEGIN_SRC emacs-lisp
+  (use-package hideshow
+    :ensure t
+    :pin manual
+    :bind
+    (:map hs-minor-mode-map
+	  ("C-c f C-h" . hs-hide-block)
+	  ("C-c f C-s" . hs-show-block)
+	  ("C-c f C-M-h" . hs-hide-all)
+	  ("C-c f C-M-s" . hs-show-all)
+	  ("C-c f C-l" . hs-hide-level)
+	  ("C-c f C-c" . hs-toggle-hiding)
+	  ("C-c f C-a" . hs-show-all)
+	  ("C-c f C-t" . hs-hide-all)
+	  ("C-c f C-d" . hs-hide-block)
+	  ("C-c f C-e" . hs-toggle-hiding)))
 #+END_SRC
 * languages
 ** elisp
@@ -641,6 +709,7 @@ https://www.reddit.com/r/emacs/comments/54pvg4/usepackage_with_builtin_modes/
      (emacs-lisp-mode . c-turn-on-eldoc-mode)
      (emacs-lisp-mode . helm-gtags-mode)
      (emacs-lisp-mode . flycheck-mode)
+     (emacs-lisp-mode . elisp-slime-nav-mode)
      :bind
      (("C-z C-v" . eval-expression)
       :map emacs-lisp-mode-map
@@ -667,6 +736,15 @@ https://www.reddit.com/r/emacs/comments/54pvg4/usepackage_with_builtin_modes/
     :ensure t)
 
 #+END_SRC
+*** slime
+#+BEGIN_SRC emacs-lisp
+  (use-package elisp-slime-nav
+    :ensure t)
+#+END_SRC
+
+
+
+
 
 ** cc
 #+BEGIN_SRC emacs-lisp
@@ -763,18 +841,18 @@ https://www.reddit.com/r/emacs/comments/54pvg4/usepackage_with_builtin_modes/
 ** makefile
 #+BEGIN_SRC emacs-lisp
   (use-package make-mode
-    :ensure t
-    :bind
+    :load-path "/usr/share/emacs/26.2/lisp/progmodes"
     :hook
-    (makefile-mode-hook . linum-mode)
-    (makefile-mode-hook . hl-line-mode)
-    (makefile-mode-hook . company-mode)
-    (makefile-mode-hook . yas-minor-mode)
-    (makefile-mode-hook . hs-minor-mode)
-    (makefile-mode-hook . rainbow-delimiters-mode)
-    (makefile-mode-hook . diff-hl-mode)
-    (makefile-mode-hook . superword-mode)
-    (makefile-mode-hook . helm-gtags-mode)
+    (makefile-mode . linum-mode)
+    (makefile-mode . hl-line-mode)
+    (makefile-mode . company-mode)
+    (makefile-mode . yas-minor-mode)
+    (makefile-mode . hs-minor-mode)
+    (makefile-mode . rainbow-delimiters-mode)
+    (makefile-mode . diff-hl-mode)
+    (makefile-mode . superword-mode)
+    (makefile-mode . helm-gtags-mode)
+    (makefile-mode . hide-ifdef-mode)
     :bind
     (:map makefile-mode-map
 	  ("C-c q" . semantic-ia-show-summary)
@@ -821,6 +899,13 @@ https://www.reddit.com/r/emacs/comments/54pvg4/usepackage_with_builtin_modes/
     (use-package rainbow-delimiters
       :ensure t)
 #+END_SRC   
+** hl line
+#+BEGIN_SRC emacs-lisp
+  (use-package hl-line
+    :ensure t
+    :custom
+    (hl-line-sticky-flag t))
+#+END_SRC
 * programs
 ** browser
 #+BEGIN_SRC emacs-lisp
@@ -835,6 +920,18 @@ https://www.reddit.com/r/emacs/comments/54pvg4/usepackage_with_builtin_modes/
     :bind
     ("M-SPC" . evil-mode))
 
+#+END_SRC
+** google
+#+BEGIN_SRC emacs-lisp
+  (use-package google-this
+    :ensure t
+    :init
+    (define-prefix-command 'google-search nil "Google search: g (Google this), l (Lucky search)")
+    :bind
+    (("C-z g" . google-search)
+     :map google-search
+      ("g" . google-this)
+      ("l" . google-this-lucky-search)))
 #+END_SRC
 * server
 #+BEGIN_SRC emacs-lisp
