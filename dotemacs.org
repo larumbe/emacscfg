@@ -103,6 +103,7 @@ is already narrowed."
     ;;; repetition and deletion
   (global-set-key (kbd "C-.") 'repeat)
   (global-set-key (kbd "C-z C-z") 'repeat)
+  (global-set-key (kbd "C-z z") 'repeat-complex-command)
   (global-set-key (kbd "C-z SPC") 'delete-trailing-whitespace)
   (global-set-key (kbd "C-z C-SPC") 'delete-horizontal-space)
   (global-set-key (kbd "C-z RET") 'just-one-space)
@@ -237,8 +238,59 @@ is already narrowed."
 
   ;; open line
   (global-set-key (kbd "M-RET") 'open-line)
+
+  ;;; marking
+  (global-set-key (kbd "C-x x") 'exchange-point-and-mark)
+  (global-set-key (kbd "C-M-g") 'mark-sexp)
+
+  ;;; apropos
+  (define-prefix-command 'Apropos-Prefix nil "Apropos (a,c,d,l,v,C-v)")
+  (global-set-key (kbd "C-q C-a") 'Apropos-Prefix)
+  (define-key Apropos-Prefix (kbd "a")   'apropos)
+  (define-key Apropos-Prefix (kbd "C-a") 'apropos)
+  (define-key Apropos-Prefix (kbd "c")   'apropos-command)
+  (define-key Apropos-Prefix (kbd "d")   'apropos-documentation)
+  (define-key Apropos-Prefix (kbd "l")   'apropos-library)
+  (define-key Apropos-Prefix (kbd "v")   'apropos-variable)
+
+  ;;; invisible sending
+  (global-set-key (kbd "C-z C-M-s") 'send-invisible)
+
+  ;;; going back to latest change
+  (global-set-key (kbd "C-z C-c") 'goto-last-change)
+
+  ;; indentation
+  (global-set-key (kbd "C-z i") 'indent-relative)
+  (global-set-key (kbd "C-z C-i") 'indent-region)
 #+END_SRC
 
+* motion
+* search
+** iedit
+#+BEGIN_SRC emacs-lisp
+  (use-package iedit
+    :ensure t
+    :bind
+    (("C-/" . iedit-mode)
+    :map iedit-mode-keymap
+    ("M-<tab>" . iedit-prev-occurrence)))
+#+END_SRC
+** anzu
+
+* windows
+** speedbar
+ #+BEGIN_SRC emacs-lisp
+   (use-package sr-speedbar
+     :ensure t)
+ #+END_SRC
+** iresize
+#+BEGIN_SRC emacs-lisp
+  (use-package iresize
+    :load-path "./elisp"
+    :pin manual
+    :bind
+    (("C-z r" . iresize-mode)))
+#+END_SRC
 * helm
 #+BEGIN_SRC emacs-lisp
   (use-package helm
@@ -253,14 +305,16 @@ is already narrowed."
      ([remap find-file] . helm-find-files)
      ([remap switch-to-buffer] . helm-buffers-list)
      ("C-o" . helm-M-x)
+     ("C-z a" . helm-mark-ring)
+     ("C-z C-a" . helm-global-mark-ring)
+     ("C-z y" . helm-show-kill-ring)
      :map helm-command-map
      ("g" . helm-ag)
      ("C-g" . helm-do-grep-ag)
-     ("w" . helm-swoop)
-     ("C-w" . helm-multi-swoop)
-     ("y" . helm-all-mark-rings)
      ("M-p" . helm-package)
      ("u" . helm-unicode)
+     ("o" . helm-occur)
+     ("C-z C-a" . helm-global-mark-ring)
      :map helm-map
      ("C-w" . backward-kill-word)
      ("C-h" . backward-delete-char))
@@ -269,6 +323,61 @@ is already narrowed."
     (global-set-key (kbd "C-x c") 'delete-other-windows)
     :hook
     (after-init . helm-mode))
+#+END_SRC
+
+#+RESULTS:
+: backward-delete-char
+
+#+BEGIN_SRC emacs-lisp
+    (use-package helm-gtags
+      :ensure t
+      :hook
+      (dired-mode-hook . helm-gtags-mode)
+      (eshell-mode-hook . helm-gtags-mode)
+      (c-mode-hook . helm-gtags-mode)
+      (c++-mode-hook . helm-gtags-mode)
+      (asm-mode-hook . helm-gtags-mode)
+      :bind
+      (:map helm-gtags-mode-map
+	    ("M-." . helm-gtags-dwim)
+	    ("M-," . helm-gtags-pop-stack)
+	    ("C-c g a" . helm-gtags-tags-in-this-function)
+	    ("C-c j" . helm-gtags-select)
+	    ("M-." . helm-gtags-dwim)
+	    ("M-," . helm-gtags-pop-stack)
+	    ("C-c <" . helm-gtags-previous-history)
+	    ("C-c >" . helm-gtags-next-history)
+	    ("C-c g w" . helm-gtags-clear-stack)
+	    ("C-c g r" . helm-gtags-find-rtag)
+	    ("C-c g s" . helm-gtags-find-symbol)
+	    ("C-c g f" . helm-gtags-parse-file)
+	    ("C-c g o" . helm-gtags-find-tag-other-window)
+	    ("C-c g C-s" . helm-gtags-show-stack)
+	    ("C-c g u" . helm-gtags-update-tags)
+	    ("C-c g C-g" . ggtags-mode)
+	    ("C-z C-r" . helm-gtags-find-rtag)
+	    ("C-z M-u" . helm-gtags-find-tag-other-window))
+      :custom
+      (helm-gtags-ignore-case t)
+      (helm-gtags-auto-update t)
+      (helm-gtags-use-input-at-cursor t)
+      (helm-gtags-pulse-at-cursor t)
+      (helm-gtags-prefix-key "\C-cg")
+      (helm-gtags-suggested-key-mapping t))
+
+  (use-package helm-rg
+    :ensure t
+    :bind (("C-x g" . helm-rg)))
+
+
+  (use-package helm-swoop
+    :commands (helm-swoop helm-multi-swoop)
+    :ensure t
+    :after (helm)
+    :bind
+    (:map helm-command-map
+    ("w" . helm-swoop)
+    ("C-w" . helm-multi-swoop)))
 #+END_SRC
 * org
 #+BEGIN_SRC emacs-lisp
@@ -371,7 +480,7 @@ https://github.com/bbatsov/projectile
 
     :hook
     (after-init . projectile-global-mode)
-
+    
     :config
     (helm-projectile-on)
     (projectile-global-mode)
@@ -423,6 +532,7 @@ https://github.com/bbatsov/projectile
     ;; add frontends
     )
 #+END_SRC
+
 ** yasnippet
 #+BEGIN_SRC  emacs-lisp
   (use-package yasnippet
@@ -486,18 +596,209 @@ https://github.com/bbatsov/projectile
     )
 
 #+END_SRC
+** undoing
+#+BEGIN_SRC emacs-lisp
+  (use-package undo-tree
+    :ensure t
+    :config
+    (global-undo-tree-mode t)
+    :bind
+    (("C-z u" . undo-tree-mode)
+    :map undo-tree-map
+    ("C-;" . undo-tree-undo)
+    ("M-;" . undo-tree-redo)))
+#+END_SRC
 * programming
-** emacs-lisp
+** syntax checking
+#+BEGIN_SRC emacs-lisp
+  (use-package flycheck
+    :ensure t)
 
+#+END_SRC
+** hideif
+#+BEGIN_SRC emacs-lisp
+  (use-package hideif
+    :ensure t
+    :custom
+    (hide-ifdef-mode-prefix-key "\C-cf"))
+#+END_SRC
+* languages
+** elisp
+https://www.reddit.com/r/emacs/comments/54pvg4/usepackage_with_builtin_modes/
+ #+BEGIN_SRC emacs-lisp
+   (use-package elisp-mode
+     :load-path "/usr/share/emacs/26.2/lisp/progmodes"
+     :after (company yasnippet)
+     :hook
+     (emacs-lisp-mode . linum-mode)
+     (emacs-lisp-mode . hl-line-mode)
+     (emacs-lisp-mode . company-mode)
+     (emacs-lisp-mode . yas-minor-mode)
+     (emacs-lisp-mode . hs-minor-mode)
+     (emacs-lisp-mode . rainbow-delimiters-mode)
+     (emacs-lisp-mode . diff-hl-mode)
+     (emacs-lisp-mode . superword-mode)
+     (emacs-lisp-mode . c-turn-on-eldoc-mode)
+     (emacs-lisp-mode . helm-gtags-mode)
+     (emacs-lisp-mode . flycheck-mode)
+     :bind
+     (("C-z C-v" . eval-expression)
+      :map emacs-lisp-mode-map
+      ("C-c i" . imenu)
+      ("C-c b" . speedbar)
+      ("C-c C-r" . eval-region)
+      ("C-c C-b" . eval-buffer)
+      ("C-c C-e" . ielm)
+      ("C-c <tab>" . company-complete)
+      ("C-c f" . company-files)
+      ("C-c C-y" . helm-yas-complete)
+      ("C-z M-y" . yas/exit-all-snippets)
+      ("C-M-," . mark-sexp)
+      ("C-c s" . mark-sexp)
+      ("C-c C-." . helm-etags-select)
+      ("C-c C-f f" . flycheck-mode)
+      ("C-C C-h" . (lambda nil (interactive) (insert "-")))
+      ("C-C C-l" . (lambda nil (interactive) (insert "'")))
+      ("C-C C-;" . (lambda nil (interactive) (insert ":")))))
+ #+END_SRC
+*** ielm
+#+BEGIN_SRC emacs-lisp
+  (use-package ielm
+    :ensure t)
+
+#+END_SRC
+
+** cc
+#+BEGIN_SRC emacs-lisp
+  (use-package function-args
+    :ensure t)
+
+  (use-package cc-mode
+    :ensure t
+    :init
+    (require 'semantic)
+    (defun my:c-mode-fa-toggle-args ()
+    "Toggle for next arg"
+    (interactive)
+    (fa-show)
+    (fa-show)
+    )
+    (use-package c-eldoc
+      :ensure t)
+    :commands (c-mode c++-mode)
+    :hook
+    (c-mode . linum-mode)
+    (c-mode . hl-line-mode)
+    (c-mode . company-mode)
+    (c-mode . yas-minor-mode)
+    (c-mode . hs-minor-mode)
+    (c-mode . rainbow-delimiters-mode)
+    (c-mode . diff-hl-mode)
+    (c-mode . superword-mode)
+    (c-mode . c-turn-on-eldoc-mode)
+    (c-mode . helm-gtags-mode)
+    (c-mode . hide-ifdef-mode)
+    :bind
+    (:map c-mode-map
+	  ("C-c q" . semantic-ia-show-summary)
+	  ( "C-c w" . semantic-ia-fast-jump)
+	  ( "C-c e" . semantic-ia-show-doc)
+	  ( "C-c C-r" . semantic-add-system-include)
+	  ( "C-c t". semantic-c-add-preprocessor-symbol)
+	  ( "M-<tab>" . moo-complete)
+	  ("C-c C-;" . fa-show)
+	  ("C-c <tab>" . company-gtags)
+	  ("C-c C-h" . company-c-headers)
+	  ("C-c v" . company-complete)
+	  ("C-c C-." . helm-gtags-dwim)
+	  ("C-c C-," . helm-gtags-pop-stack)
+	  ("C-c C-c" . compile)
+	  ("C-c C-g" . gdb)
+	  ("C-c C-k" . ff-find-other-file)
+	  ("C-c d" . mark-defun)
+	  ("C-c i" . (lambda () (interactive)
+	      (end-of-line)
+	      (insert ";")))
+	  ("C-c ;" . (lambda () (interactive)
+	      (end-of-line)
+	      (insert ";")
+	      (newline-and-indent)))
+	  ("C-c o" . (lambda () (interactive)
+	      (insert " = ")))
+	  ("C-c u" . (lambda () (interactive)
+	      (insert "_")))
+	  ("C-c [" . (lambda () (interactive)
+	      (insert "->")))
+	  ("C-c ]" . (lambda () (interactive)
+	      (insert "#")))
+	  ("C-c k" . (lambda () (interactive)
+	      (insert "&")))
+	  ("C-c l" . (lambda () (interactive)
+	      (insert "*")))
+	  ("C-c . " . (lambda () (interactive)
+			(insert "%")))
+	  ("C-c y" . yas/expand)
+	  ("C-c C-y" . helm-yas-complete)
+	  ("C-c C-a" . hs-hide-block)
+	  ("C-c C-s" . hs-show-block)
+	  ("C-c a" . hs-hide-level)
+	  ("C-c s" . hs-show-all)
+	  ("C-c x" . info-lookup-symbol)
+	  ("C-c m" . back-to-indentation)
+	  ("C-c z" . indent-region)
+	  ("C-c b" . sr-speedbar-toggle))
+    :config
+    (global-semanticdb-minor-mode 1)
+    (global-semantic-idle-scheduler-mode 1)
+    (global-semantic-stickyfunc-mode 1)
+    (global-semantic-decoration-mode 1)
+    (semantic-mode 1)
+    :custom
+    (c-basic-offset 8)
+    (tab-width 8)
+    (indent-tabs-mode t)
+    )
+
+#+END_SRC
+** makefile
+#+BEGIN_SRC emacs-lisp
+  (use-package make-mode
+    :ensure t
+    :bind
+    :hook
+    (makefile-mode-hook . linum-mode)
+    (makefile-mode-hook . hl-line-mode)
+    (makefile-mode-hook . company-mode)
+    (makefile-mode-hook . yas-minor-mode)
+    (makefile-mode-hook . hs-minor-mode)
+    (makefile-mode-hook . rainbow-delimiters-mode)
+    (makefile-mode-hook . diff-hl-mode)
+    (makefile-mode-hook . superword-mode)
+    (makefile-mode-hook . helm-gtags-mode)
+    :bind
+    (:map makefile-mode-map
+	  ("C-c q" . semantic-ia-show-summary)
+	  ( "C-c w" . semantic-ia-fast-jump)
+	  ( "C-c e" . semantic-ia-show-doc)
+	  ( "C-c C-r" . semantic-add-system-include)
+	  ( "C-c t". semantic-c-add-preprocessor-symbol)
+	  ("C-c k" . (lambda nil (interactive) (insert "$")))
+	  ("C-c o" . (lambda nil (interactive) (insert "=")))
+	  ("C-c i" . (lambda nil (interactive) (insert ":=")))
+	  ("C-c u" . (lambda nil (interactive) (insert "_")))))
+#+END_SRC
 * appearance
 ** theme
 #+BEGIN_SRC emacs-lisp
   (use-package solarized-theme
-    :ensure t
-    :init
-    (load-theme 'solarized-dark t))
+    :ensure t)
+  (use-package monokai-theme
+    :ensure t)
 #+END_SRC
 
+#+BEGIN_SRC emacs-lisp
+(load-theme 'solarized-dark t)
+#+END_SRC
 ** modeline
 #+BEGIN_SRC emacs-lisp
   (use-package powerline
@@ -507,13 +808,34 @@ https://github.com/bbatsov/projectile
     (powerline-default-theme))
 
 #+END_SRC
-* shell
+** parens
+#+BEGIN_SRC emacs-lisp
+    (use-package paredit
+      :ensure t
+      :bind
+      (:map emacs-lisp-mode-map
+	    ("C-c C-j" . paredit-open-round)
+	    ("C-c C-k" . paredit-close-round)
+	    ("C-C C-'" . paredit-doublequote)))
+
+    (use-package rainbow-delimiters
+      :ensure t)
+#+END_SRC   
 * programs
 ** browser
 #+BEGIN_SRC emacs-lisp
   (global-set-key (kbd "C-z C-o") 'browse-url)
 #+END_SRC
 
+** shell
+** evil
+#+BEGIN_SRC emacs-lisp
+  (use-package evil
+    :ensure t
+    :bind
+    ("M-SPC" . evil-mode))
+
+#+END_SRC
 * server
 #+BEGIN_SRC emacs-lisp
   (server-start)

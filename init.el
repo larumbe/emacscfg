@@ -29,6 +29,9 @@
  use-package-always-defer t
  use-package-always-ensure t)
 
+(use-package use-package-ensure-system-package
+  :ensure t)
+
 (org-babel-load-file (expand-file-name "dotemacs.org"))
 
 ;;; init.el ends here
