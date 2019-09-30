@@ -9,13 +9,17 @@
 
 (setq user-emacs-directory default-directory)
 
+(setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")
+
 (setq-default
  load-prefer-newer t
  package-enable-at-startup nil
- package-user-dir (concat user-emacs-directory "elpa"))
+ package-user-dir (concat user-emacs-directory "elpa")
+ package-check-signature nil)
 
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 (add-to-list 'package-archives '("org" . "https://orgmode.org/elpa/") t)
+(add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/") t)
 
 (package-initialize)
 
