@@ -198,8 +198,8 @@
 
    ;;; winner mode configuration
    (winner-mode)
-   (define-key winner-mode-map (kbd "C-z C-]") 'winner-undo)
-   (define-key winner-mode-map (kbd "C-z C-\\") 'winner-redo)
+   (define-key winner-mode-map (kbd "C-z k") 'winner-undo)
+   (define-key winner-mode-map (kbd "C-z j") 'winner-redo)
 
    ;;; Don't ask for confirmation before killing an unmodified buffer
    (defun volatile-kill-buffer ()
@@ -274,6 +274,12 @@
    (global-set-key (kbd "C-z w") 'pwd)
 
    (global-set-key (kbd "C-z C-b") 'switch-to-temporary-buffer)
+
+   ;;; subword mode
+   (global-set-key (kbd "C-x C-M-w") 'subword-mode)
+
+   ;;; compilation
+   (global-set-key (kbd "C-x C-M-c") (keybinding (switch-to-buffer "*compilation*")))
  #+END_SRC
 ** packages
 #+BEGIN_SRC emacs-lisp
@@ -402,6 +408,9 @@
     (:map helm-command-map
     ("w" . helm-swoop)
     ("C-w" . helm-multi-swoop)))
+
+  (use-package helm-cscope
+    :ensure t)
 #+END_SRC
 * marking
 #+BEGIN_SRC emacs-lisp
@@ -448,8 +457,8 @@
      ("C-c t" . org-time-stamp)
      ("C-c f" . org-metaright)
      ("C-c b" . org-metaleft)
-     ("C-c n" . org-metadown)
-     ("C-c p" . org-metaup)
+     ("C-c M-n" . org-metadown)
+     ("C-c M-p" . org-metaup)
      ("C-c '" . org-insert-todo-heading)
      ("M-p" . org-table-previous-field)
      ("M-n" . org-table-next-field)
@@ -458,6 +467,10 @@
      ("C-c C-," . org-promote-subtree)
      ("C-c C-." . org-demote-subtree)
      ("C-c e" . org-edit-src-code)
+     ("C-c q" . (lambda () (interactive) (insert "|")))
+     ("C-c w" . (lambda () (interactive) (insert "|-")))
+     ("C-c k" . (lambda () (interactive) (insert "- [ ] " )))
+     ("C-c u" . (lambda () (interactive) (insert "*")))
      :map org-agenda-mode-map
      ("C-c m" . org-agenda-month-view)
      ("C-c y" . org-agenda-year-view)
@@ -626,6 +639,12 @@ https://github.com/bbatsov/projectile
     ("C-z b" . ediff-buffers))
 #+END_SRC
 ** magit
+#+begin_src emacs-lisp
+  (use-package p4
+    :init
+    (setq p4-global-key-prefix "v"))
+#+end_src
+
  #+BEGIN_SRC emacs-lisp
    (use-package magit
      :ensure t
@@ -637,7 +656,6 @@ https://github.com/bbatsov/projectile
 	    ("C"   . magit-checkout)
 	    (";"   . magit-dispatch-popup))
      :config (progn
-	       (use-package magit-p4)
 	       (magit-define-popup-action 'magit-ediff-popup ?S "Show staged" 'magit-ediff-show-staged)
 	       (magit-define-popup-action 'magit-ediff-popup ?U "Show unstaged" 'magit-ediff-show-unstaged)))
  #+END_SRC
@@ -669,7 +687,6 @@ https://github.com/bbatsov/projectile
 #+BEGIN_SRC emacs-lisp
   (use-package flycheck
     :ensure t)
-
 #+END_SRC
 ** hideif
 #+BEGIN_SRC emacs-lisp
@@ -870,6 +887,151 @@ https://www.reddit.com/r/emacs/comments/54pvg4/usepackage_with_builtin_modes/
 	  ("C-c o" . (lambda nil (interactive) (insert "=")))
 	  ("C-c i" . (lambda nil (interactive) (insert ":=")))
 	  ("C-c u" . (lambda nil (interactive) (insert "_")))))
+#+END_SRC
+** shell
+#+BEGIN_SRC emacs-lisp
+  (use-package sh-script
+    :ensure t
+    :init
+    (use-package flymake-shellcheck
+      :commands flymake-shellcheck-load
+      :init
+      (add-hook 'sh-mode-hook 'flymake-shellcheck-load))
+    (use-package company-shell)
+    :hook
+    (sh-mode . linum-mode)
+    (sh-mode . yas-minor-mode)
+    (sh-mode . hl-line-mode)
+    (sh-mode . diff-hl-mode)
+    (sh-mode . company-mode)
+    (sh-mode . rainbow-delimiters-mode)
+    (sh-mode . flymake-mode)
+    :init
+    (progn
+      (add-to-list 'company-backends 'company-shell))
+    :bind
+    (:map sh-mode-map
+	  ("C-c f" . flymake-goto-next-error)
+	  ("C-c b" . flymake-goto-prev-error)
+	  ("C-c r" . sh-execute-region)
+	  ("C-c s" . sh-send-line-or-region)
+	  ("M-." . xref-find-definitions)
+	  ("C-c o" . (lambda () (interactive) (insert "=")))
+	  ("C-c u" . (lambda () (interactive)(insert "_")))
+	  ("C-c k" . (lambda () (interactive) (insert "$")))
+	  ("C-c C-k" . (lambda () (interactive) (insert " ")(backward-char)))
+	  ("C-c i" . info-lookup-symbol)))
+
+#+END_SRC
+** python
+https://github.com/howardabrams/dot-files/blob/master/emacs-python.org
+
+#+BEGIN_SRC emacs-lisp
+  (use-package pyenv-mode
+    :ensure t
+    :config
+    (defun projectile-pyenv-mode-set ()
+      "Set pyenv version matching project name."
+      (let ((project (projectile-project-name)))
+	(if (member project (pyenv-mode-versions))
+	    (pyenv-mode-set project)
+	  (pyenv-mode-unset))))
+
+    (add-hook 'projectile-switch-project-hook 'projectile-pyenv-mode-set)
+    (add-hook 'python-mode-hook 'pyenv-mode))
+
+  (use-package pyenv-mode-auto
+    :ensure t)
+
+  (use-package python-mode
+    :mode ("\\.py\\'" . python-mode)
+    ("\\.wsgi$" . python-mode)
+    :interpreter ("python" . python-mode)
+    :init
+    (progn
+      (use-package company-jedi
+	:ensure t)
+      (use-package highlight-indentation
+	:ensure t)
+      (setq-default indent-tabs-mode nil))
+    :bind
+    (("C-z C-M-r" . run-python)
+     ("C-z M-r" . python-shell-switch-to-shell)
+     :map python-mode-map
+     ("C-c i" . info-lookup-symbol)
+     ("C-c j" . (lambda () (interactive) (insert " = ")))
+     ("C-c k" . (lambda () (interactive) (insert "_")))
+     ("C-c f" . flycheck-next-error)
+     ("C-c b" . flycheck-previous-error)
+     ("C-c q" . flycheck-mode)
+     ("C-c d" . jedi:show-doc)
+     ("C-c c" . company-jedi)
+     ("C-c g" . elpy-config)
+     ("M-," . pop-tag-mark)
+     ("C-c M-n" . elpy-nav-indent-shift-right)
+     ("C-c M-p" . elpy-nav-indent-shift-left)
+     ("C-c C-y" . helm-yas-complete)
+     ("C-z h d" . helm-pydoc)
+     ("C-c e" . helm-cscope-find-calling-this-function)
+     ("C-c w" . helm-cscope-pop-mark)
+     ("C-c m" . elpy-shell-send-current-statement)
+     ("C-c s" . sr-speedbar-toggle)
+     ("C-c C-." . jedi:goto-definition)
+     ("C-c C-," . jedi:goto-definition-pop-marker)
+     ("C-c i" . (lambda () (interactive) (end-of-line) (insert ":")))
+     ("C-c o" . (lambda () (interactive)(insert " = ")))
+     ;; :map inferior-python-mode-map
+     ;; ("C-c o" . (lambda () (interactive)(insert " = ")))
+     )
+    :hook
+    (python-mode . linum-mode)
+    (python-mode . which-function-mode)
+    (python-mode . diff-hl-mode)
+    (python-mode . helm-cscope-mode)
+    (python-mode . highlight-indentation-mode)
+    (python-mode . hs-minor-mode)
+    (python-mode . flycheck-mode)
+    (python-mode . jedi:setup)
+    :custom
+    (python-shell-interpreter "ipython3")
+    (jedi:complete-on-adot t))
+
+
+    :config
+    (setq python-indent-offset 4)
+    ;; (add-hook 'python-mode-hook 'smartparens-mode)
+    ;; (add-hook 'python-mode-hook 'color-identifiers-mode)
+
+
+  (use-package jedi
+    :ensure t
+    :init
+    (add-to-list 'company-backends 'company-jedi)
+    :config
+    (use-package company-jedi
+      :ensure t
+      :init
+      (add-hook 'python-mode-hook (lambda () (add-to-list 'company-backends 'company-jedi)))
+      (setq company-jedi-python-bin "python")))
+
+  (use-package elpy
+    :ensure t
+    :commands elpy-enable
+    :init (with-eval-after-load 'python (elpy-enable))
+
+    :config
+    (electric-indent-local-mode -1)
+    (delete 'elpy-module-highlight-indentation elpy-modules)
+    (delete 'elpy-module-flymake elpy-modules)
+
+    (defun ha/elpy-goto-definition ()
+      (interactive)
+      (condition-case err
+	  (elpy-goto-definition)
+	('error (xref-find-definitions (symbol-name (symbol-at-point))))))
+
+    :bind (:map elpy-mode-map ([remap elpy-goto-definition] .
+			       ha/elpy-goto-definition)))
 #+END_SRC
 * appearance
 ** theme
