@@ -881,7 +881,7 @@ https://www.reddit.com/r/emacs/comments/54pvg4/usepackage_with_builtin_modes/
 #+END_SRC
 
 #+BEGIN_SRC emacs-lisp
-(load-theme 'solarized-dark t)
+(load-theme 'monokai t)
 #+END_SRC
 ** modeline
 #+BEGIN_SRC emacs-lisp
@@ -938,6 +938,15 @@ https://www.reddit.com/r/emacs/comments/54pvg4/usepackage_with_builtin_modes/
      :map google-search
       ("g" . google-this)
       ("l" . google-this-lucky-search)))
+#+END_SRC
+** dired
+#+BEGIN_SRC emacs-lisp
+  (use-package dired
+    :load-path "/usr/share/emacs/26.2/lisp"
+    :bind
+    (:map dired-mode-map
+	  ("C-o" . nil)
+	  ("C-c C-o" . dired-display-file)))
 #+END_SRC
 * server
 #+BEGIN_SRC emacs-lisp
