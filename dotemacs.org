@@ -275,9 +275,6 @@
 
    (global-set-key (kbd "C-z C-b") 'switch-to-temporary-buffer)
  #+END_SRC
-
- #+RESULTS:
- : t
 ** packages
 #+BEGIN_SRC emacs-lisp
   (use-package dash :ensure t)
@@ -354,9 +351,6 @@
     :hook
     (after-init . helm-mode))
 #+END_SRC
-
-#+RESULTS:
-: backward-delete-char
 
 #+BEGIN_SRC emacs-lisp
     (use-package helm-gtags
