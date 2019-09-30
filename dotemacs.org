@@ -44,240 +44,245 @@
     (interactive)
     (pop-to-buffer "temp"))
 #+END_SRC
-* basic customisation
+* basic
+** defaults
+ #+BEGIN_SRC emacs-lisp
+     ;;; easy package list access
+   (global-set-key (kbd "C-x C-M-p") 'package-list-packages)
+
+     ;;; new global prefix
+   (global-unset-key (kbd "C-z"))
+
+     ;;; appearance
+   (tool-bar-mode -1)
+   (menu-bar-mode -1)
+   (if (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
+   (setq inhibit-startup-message t)
+   (column-number-mode t)
+
+     ;;; quick window switching
+   (global-set-key (kbd "C-z C-k") 'windmove-up)
+   (global-set-key (kbd "C-z C-j") 'windmove-down)
+   (global-set-key (kbd "C-z C-h") 'windmove-left)
+   (global-set-key (kbd "C-z C-l") 'windmove-right)
+
+     ;;; quick editing of config files
+   (global-set-key (kbd "C-z .") (keybinding (find-file (concat user-emacs-directory "dotemacs.org") )))
+   (global-set-key (kbd "C-z ,") (keybinding (dired user-emacs-directory)))
+
+   ;; parenthesis
+   (electric-pair-mode t)
+   (show-paren-mode t)
+
+     ;;; forward yanking
+   (defun yank-pop-forwards (arg)
+     (interactive "p")
+     (yank-pop (- arg)))
+   (global-set-key (kbd "C-M-y") 'yank-pop-forwards)
+
+     ;;; bash deletion
+   (global-unset-key (kbd "C-h"))
+   (global-set-key (kbd "C-h") 'delete-backward-char)
+   (global-set-key (kbd "C-w") 'backward-kill-word)
+
+   ;; Help key bindings
+   (global-set-key (kbd "C-q") 'help-command)
+   (global-set-key (kbd "C-q C-c") 'describe-key-briefly)
+   (global-set-key (kbd "C-q C-w") 'where-is)
+   (global-set-key (kbd "C-q g") 'find-function)
+
+   ;; vanilla keystrokes
+   (global-set-key (kbd "C-M-]") 'eval-expression)
+   (global-set-key (kbd "C-x C-k") 'kill-region)
+   (global-set-key (kbd "C-z \\") 'pop-tag-mark)
+   (global-set-key (kbd "C-x l") 'kill-whole-line)
+   (global-set-key (kbd "C-z M-=") 'count-lines-page)
+   (global-set-key (kbd "C-M-SPC") 'recenter-top-bottom)
+   (global-set-key (kbd "C-q C-q") 'quoted-insert)
+
+     ;;; switch to previous buffer
+   (defun switch-to-previous-buffer ()
+     "Goes to the most recent previous buffer"
+     (interactive)
+     (switch-to-buffer (other-buffer (current-buffer) 1)))
+   (global-set-key (kbd "C-x p") 'switch-to-previous-buffer)
+
+     ;;; repetition and deletion
+   (global-set-key (kbd "C-.") 'repeat)
+   (global-set-key (kbd "C-z C-z") 'repeat)
+   (global-set-key (kbd "C-z z") 'repeat-complex-command)
+   (global-set-key (kbd "C-z SPC") 'delete-trailing-whitespace)
+   (global-set-key (kbd "C-z C-SPC") 'delete-horizontal-space)
+   (global-set-key (kbd "C-z RET") 'just-one-space)
+
+   ;; the blinking cursor is nothing, but an annoyance
+   (blink-cursor-mode -1)
+
+   ;; other window scroll'
+   (global-set-key (kbd "C-x P") 'mark-page)
+   (global-set-key (kbd "C-x C") 'set-goal-column)
+   (global-set-key (kbd "C-z C-n") 'scroll-other-window)
+   (global-set-key (kbd "C-z C-p") 'scroll-other-window-down)
+
+   ;; paragraph motion
+   (global-set-key (kbd "M-p") 'backward-paragraph)
+   (global-set-key (kbd "M-n") 'forward-paragraph)
+
+   ;; better bindings for beginning and end of buffer
+   (global-set-key (kbd "C-z C-,") 'beginning-of-buffer)
+   (global-set-key (kbd "C-z C-.") 'end-of-buffer)
+
+     ;;; straight to line
+   (global-set-key (kbd "C-x C-j") 'goto-line)
+
+     ;;; minibuffer
+   (defalias 'yes-or-no-p 'y-or-n-p)
+
+   ;; smooth scrolling
+   (setq scroll-step 1)
+
+   ;;; other window
+   (global-set-key (kbd "<C-tab>") 'other-window)
+   ;;; keep as fall-back combo for when CAPS+TAB is taken over by the minor mode
+   (global-set-key (kbd "C-x C-x") 'other-window)
+   (global-set-key (kbd "<C-M-tab>") (keybinding (other-window -1)))
+
+     ;;; line truncation
+   (global-set-key (kbd "C-z t") 'toggle-truncate-lines)
+
+     ;;; killing and marking
+   (global-set-key (kbd "C-x w") 'append-next-kill)
+
+   ;;; fast buffer switch
+   (global-set-key (kbd "C-x C-p") 'previous-buffer)
+   (global-set-key (kbd "C-x C-n") 'next-buffer)
+
+   (defun my:split-window-below-switch-point ()
+     "Splits window and moves the point to save time"
+     (interactive)
+     (split-window-below)
+     (other-window 1))
+   (global-set-key (kbd "C-x C-y") 'my:split-window-below-switch-point)
+
+   (defun my:split-window-right-switch-point ()
+     "Splits window and moves the point to save time"
+     (interactive)
+     (split-window-horizontally)
+     (other-window 1))
+   (global-set-key (kbd "C-x y") 'my:split-window-right-switch-point)
+
+   ;;; Shouldn't have to reach out long for this
+   (global-set-key (kbd "C-x c") 'delete-other-windows)
+
+   ;;; keyboard macros
+   (global-set-key (kbd "C-x M-q") 'kbd-macro-query)
+
+   ;;; frames
+   (global-set-key (kbd "C-x o") 'other-frame)
+   (global-set-key (kbd "C-x f") 'make-frame)
+
+   ;;; screen size
+   (global-set-key (kbd "C-z C-;") 'text-scale-decrease)
+   (global-set-key (kbd "C-z C-'") 'text-scale-increase)
+
+   ;; buffer list
+   (global-set-key (kbd "C-x C-b") 'ibuffer)
+
+   ;;; backups
+   (setq backup-by-copying t
+	 backup-directory-alist '(("." . "~/emacsbackups"))
+	 delete-old-versions t
+	 kept-new-versions 6
+	 kept-old-versions 2
+	 version-control t)
+
+   ;;; winner mode configuration
+   (winner-mode)
+   (define-key winner-mode-map (kbd "C-z C-]") 'winner-undo)
+   (define-key winner-mode-map (kbd "C-z C-\\") 'winner-redo)
+
+   ;;; Don't ask for confirmation before killing an unmodified buffer
+   (defun volatile-kill-buffer ()
+     "Kill current buffer unconditionally."
+     (interactive)
+     (let ((buffer-modified-p nil))
+       (kill-buffer (current-buffer))))
+   (global-set-key (kbd "C-x k") 'volatile-kill-buffer)
+
+   ;; No ask to kill buffer
+   (setq buffer-offer-save nil)
+
+   ;;; narrowing
+   (global-set-key (kbd "C-z n") 'narrow-or-widen-dwim)
+
+   ;;; files
+   (global-set-key (kbd "C-z l") 'load-file)
+   ;;; filling
+   (global-set-key (kbd "C-z C-f") 'fill-region)
+   (global-set-key (kbd "C-z M-f") 'auto-fill-mode)
+
+   ;;; dired
+   (global-set-key (kbd "C-x C-d") 'wdired-change-to-wdired-mode)
+   (global-set-key (kbd "M-\\")  (keybinding (dired default-directory)))
+   (global-set-key (kbd "C-x /") (keybinding (dired "~/")))
+
+   ;;; appearance
+   (global-set-key (kbd "C-z M-l") 'load-theme)
+   (load-theme 'deeper-blue t)
+   (set-frame-font "Hack-14" nil t)
+
+   ;;; shell
+   (global-set-key (kbd "C-z ;") 'shell-command)
+   (global-set-key (kbd "C-z |") 'shell-command-on-region)
+
+   ;; undoing
+   (global-set-key (kbd "C-;") 'undo)
+
+   ;; open line
+   (global-set-key (kbd "M-RET") 'open-line)
+
+   ;;; marking
+   (global-set-key (kbd "C-x x") 'exchange-point-and-mark)
+   (global-set-key (kbd "C-M-g") 'mark-sexp)
+
+   ;;; apropos
+   (define-prefix-command 'Apropos-Prefix nil "Apropos (a,c,d,l,v,C-v)")
+   (global-set-key (kbd "C-q C-a") 'Apropos-Prefix)
+   (define-key Apropos-Prefix (kbd "a")   'apropos)
+   (define-key Apropos-Prefix (kbd "C-a") 'apropos)
+   (define-key Apropos-Prefix (kbd "c")   'apropos-command)
+   (define-key Apropos-Prefix (kbd "d")   'apropos-documentation)
+   (define-key Apropos-Prefix (kbd "l")   'apropos-library)
+   (define-key Apropos-Prefix (kbd "v")   'apropos-variable)
+
+   ;;; invisible sending
+   (global-set-key (kbd "C-z C-M-s") 'send-invisible)
+
+   ;;; going back to latest change
+   (global-set-key (kbd "C-z C-c") 'goto-last-change)
+
+   ;; indentation
+   (global-set-key (kbd "C-z i") 'indent-relative)
+   (global-set-key (kbd "C-z C-i") 'indent-region)
+
+   ;; searching and replacing
+   (global-set-key (kbd "C-z C-s") 'isearch-forward-symbol-at-point)
+   (global-set-key (kbd "C-z x") 'query-replace)
+   (delete-selection-mode)   ;;; replace region with yank
+
+   ;; print working dir
+   (global-set-key (kbd "C-z w") 'pwd)
+
+   (global-set-key (kbd "C-z C-b") 'switch-to-temporary-buffer)
+ #+END_SRC
+
+ #+RESULTS:
+ : t
+** packages
 #+BEGIN_SRC emacs-lisp
-    ;;; easy package list access
-  (global-set-key (kbd "C-x C-M-p") 'package-list-packages)
-
-    ;;; new global prefix
-  (global-unset-key (kbd "C-z"))
-
-    ;;; appearance
-  (tool-bar-mode -1)
-  (menu-bar-mode -1)
-  (if (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
-  (setq inhibit-startup-message t)
-  (column-number-mode t)
-
-    ;;; quick window switching
-  (global-set-key (kbd "C-z C-k") 'windmove-up)
-  (global-set-key (kbd "C-z C-j") 'windmove-down)
-  (global-set-key (kbd "C-z C-h") 'windmove-left)
-  (global-set-key (kbd "C-z C-l") 'windmove-right)
-
-    ;;; quick editing of config files
-  (global-set-key (kbd "C-z .") (keybinding (find-file (concat user-emacs-directory "dotemacs.org") )))
-  (global-set-key (kbd "C-z ,") (keybinding (dired user-emacs-directory)))
-
-  ;; parenthesis
-  (electric-pair-mode t)
-  (show-paren-mode t)
-
-    ;;; forward yanking
-  (defun yank-pop-forwards (arg)
-    (interactive "p")
-    (yank-pop (- arg)))
-  (global-set-key (kbd "C-M-y") 'yank-pop-forwards)
-
-    ;;; bash deletion
-  (global-unset-key (kbd "C-h"))
-  (global-set-key (kbd "C-h") 'delete-backward-char)
-  (global-set-key (kbd "C-w") 'backward-kill-word)
-
-  ;; Help key bindings
-  (global-set-key (kbd "C-q") 'help-command)
-  (global-set-key (kbd "C-q C-c") 'describe-key-briefly)
-  (global-set-key (kbd "C-q C-w") 'where-is)
-  (global-set-key (kbd "C-q g") 'find-function)
-
-  ;; vanilla keystrokes
-  (global-set-key (kbd "C-M-]") 'eval-expression)
-  (global-set-key (kbd "C-x C-k") 'kill-region)
-  (global-set-key (kbd "C-z \\") 'pop-tag-mark)
-  (global-set-key (kbd "C-x l") 'kill-whole-line)
-  (global-set-key (kbd "C-z M-=") 'count-lines-page)
-  (global-set-key (kbd "C-M-SPC") 'recenter-top-bottom)
-  (global-set-key (kbd "C-q C-q") 'quoted-insert)
-
-    ;;; switch to previous buffer
-  (defun switch-to-previous-buffer ()
-    "Goes to the most recent previous buffer"
-    (interactive)
-    (switch-to-buffer (other-buffer (current-buffer) 1)))
-  (global-set-key (kbd "C-x p") 'switch-to-previous-buffer)
-
-    ;;; repetition and deletion
-  (global-set-key (kbd "C-.") 'repeat)
-  (global-set-key (kbd "C-z C-z") 'repeat)
-  (global-set-key (kbd "C-z z") 'repeat-complex-command)
-  (global-set-key (kbd "C-z SPC") 'delete-trailing-whitespace)
-  (global-set-key (kbd "C-z C-SPC") 'delete-horizontal-space)
-  (global-set-key (kbd "C-z RET") 'just-one-space)
-
-  ;; the blinking cursor is nothing, but an annoyance
-  (blink-cursor-mode -1)
-
-  ;; other window scroll'
-  (global-set-key (kbd "C-x P") 'mark-page)
-  (global-set-key (kbd "C-x C") 'set-goal-column)
-  (global-set-key (kbd "C-z C-n") 'scroll-other-window)
-  (global-set-key (kbd "C-z C-p") 'scroll-other-window-down)
-
-  ;; paragraph motion
-  (global-set-key (kbd "M-p") 'backward-paragraph)
-  (global-set-key (kbd "M-n") 'forward-paragraph)
-
-  ;; better bindings for beginning and end of buffer
-  (global-set-key (kbd "C-z C-,") 'beginning-of-buffer)
-  (global-set-key (kbd "C-z C-.") 'end-of-buffer)
-
-    ;;; straight to line
-  (global-set-key (kbd "C-x C-j") 'goto-line)
-
-    ;;; minibuffer
-  (defalias 'yes-or-no-p 'y-or-n-p)
-
-  ;; smooth scrolling
-  (setq scroll-step 1)
-
-  ;;; other window
-  (global-set-key (kbd "<C-tab>") 'other-window)
-  ;;; keep as fall-back combo for when CAPS+TAB is taken over by the minor mode
-  (global-set-key (kbd "C-x C-x") 'other-window)
-  (global-set-key (kbd "<C-M-tab>") (keybinding (other-window -1)))
-
-    ;;; line truncation
-  (global-set-key (kbd "C-z t") 'toggle-truncate-lines)
-
-    ;;; killing and marking
-  (global-set-key (kbd "C-x w") 'append-next-kill)
-
-  ;;; fast buffer switch
-  (global-set-key (kbd "C-x C-p") 'previous-buffer)
-  (global-set-key (kbd "C-x C-n") 'next-buffer)
-
-  (defun my:split-window-below-switch-point ()
-    "Splits window and moves the point to save time"
-    (interactive)
-    (split-window-below)
-    (other-window 1))
-  (global-set-key (kbd "C-x C-y") 'my:split-window-below-switch-point)
-
-  (defun my:split-window-right-switch-point ()
-    "Splits window and moves the point to save time"
-    (interactive)
-    (split-window-horizontally)
-    (other-window 1))
-  (global-set-key (kbd "C-x y") 'my:split-window-right-switch-point)
-
-  ;;; Shouldn't have to reach out long for this
-  (global-set-key (kbd "C-x c") 'delete-other-windows)
-
-  ;;; keyboard macros
-  (global-set-key (kbd "C-x M-q") 'kbd-macro-query)
-
-  ;;; frames
-  (global-set-key (kbd "C-x o") 'other-frame)
-  (global-set-key (kbd "C-x f") 'make-frame)
-
-  ;;; screen size
-  (global-set-key (kbd "C-z C-;") 'text-scale-decrease)
-  (global-set-key (kbd "C-z C-'") 'text-scale-increase)
-
-  ;; buffer list
-  (global-set-key (kbd "C-x C-b") 'ibuffer)
-
-  ;;; backups
-  (setq backup-by-copying t
-	backup-directory-alist '(("." . "~/emacsbackups"))
-	delete-old-versions t
-	kept-new-versions 6
-	kept-old-versions 2
-	version-control t)
-
-  ;;; winner mode configuration
-  (winner-mode)
-  (define-key winner-mode-map (kbd "C-z C-]") 'winner-undo)
-  (define-key winner-mode-map (kbd "C-z C-\\") 'winner-redo)
-
-  ;;; Don't ask for confirmation before killing an unmodified buffer
-  (defun volatile-kill-buffer ()
-    "Kill current buffer unconditionally."
-    (interactive)
-    (let ((buffer-modified-p nil))
-      (kill-buffer (current-buffer))))
-  (global-set-key (kbd "C-x k") 'volatile-kill-buffer)
-
-  ;; No ask to kill buffer
-  (setq buffer-offer-save nil)
-
-  ;;; narrowing
-  (global-set-key (kbd "C-z n") 'narrow-or-widen-dwim)
-
-  ;;; files
-  (global-set-key (kbd "C-z l") 'load-file)
-  ;;; filling
-  (global-set-key (kbd "C-z C-f") 'fill-region)
-  (global-set-key (kbd "C-z M-f") 'auto-fill-mode)
-
-  ;;; dired
-  (global-set-key (kbd "C-x C-d") 'wdired-change-to-wdired-mode)
-  (global-set-key (kbd "M-\\")  (keybinding (dired default-directory)))
-  (global-set-key (kbd "C-x /") (keybinding (dired "~/")))
-
-  ;;; appearance
-  (global-set-key (kbd "C-z M-l") 'load-theme)
-  (load-theme 'deeper-blue t)
-  (set-frame-font "Hack-14" nil t)
-
-  ;;; shell
-  (global-set-key (kbd "C-z ;") 'shell-command)
-  (global-set-key (kbd "C-z |") 'shell-command-on-region)
-
-  ;; undoing
-  (global-set-key (kbd "C-;") 'undo)
-
-  ;; open line
-  (global-set-key (kbd "M-RET") 'open-line)
-
-  ;;; marking
-  (global-set-key (kbd "C-x x") 'exchange-point-and-mark)
-  (global-set-key (kbd "C-M-g") 'mark-sexp)
-
-  ;;; apropos
-  (define-prefix-command 'Apropos-Prefix nil "Apropos (a,c,d,l,v,C-v)")
-  (global-set-key (kbd "C-q C-a") 'Apropos-Prefix)
-  (define-key Apropos-Prefix (kbd "a")   'apropos)
-  (define-key Apropos-Prefix (kbd "C-a") 'apropos)
-  (define-key Apropos-Prefix (kbd "c")   'apropos-command)
-  (define-key Apropos-Prefix (kbd "d")   'apropos-documentation)
-  (define-key Apropos-Prefix (kbd "l")   'apropos-library)
-  (define-key Apropos-Prefix (kbd "v")   'apropos-variable)
-
-  ;;; invisible sending
-  (global-set-key (kbd "C-z C-M-s") 'send-invisible)
-
-  ;;; going back to latest change
-  (global-set-key (kbd "C-z C-c") 'goto-last-change)
-
-  ;; indentation
-  (global-set-key (kbd "C-z i") 'indent-relative)
-  (global-set-key (kbd "C-z C-i") 'indent-region)
-
-  ;; searching and replacing
-  (global-set-key (kbd "C-z C-s") 'isearch-forward-symbol-at-point)
-  (global-set-key (kbd "C-z x") 'query-replace)
-  (delete-selection-mode)   ;;; replace region with yank
-
-  ;; print working dir
-  (global-set-key (kbd "C-z w") 'pwd)
-
-  (global-set-key (kbd "C-z C-b") 'switch-to-temporary-buffer)
+  (use-package dash :ensure t)
+  (use-package diminish :ensure t)
 #+END_SRC
-
-#+RESULTS:
-: t
-
 * motion
 * search
 ** iedit
@@ -320,6 +325,7 @@
     :ensure t
     :after (helm-config)
     :requires helm-config
+    :diminish helm-mode
     :preface
     (require 'helm-config)
     :bind
@@ -391,7 +397,7 @@
 
   (use-package helm-rg
     :ensure t
-    :bind (("C-x g" . helm-rg)))
+    :bind (("C-x C-g" . helm-rg)))
 
 
   (use-package helm-swoop
@@ -550,7 +556,7 @@ https://github.com/bbatsov/projectile
 #+BEGIN_SRC emacs-lisp
   (use-package company
     :ensure t
-    :diminish
+    :diminish (company-mode global-company-mode)
     :init
     (global-company-mode)
     :hook
@@ -631,6 +637,7 @@ https://github.com/bbatsov/projectile
      :ensure t
      :bind (("C-z m"   . magit-status)
 	    ("C-z M-d" . magit-dispatch-popup)
+	    ("C-x g" . nil)
 	    :map magit-mode-map
 	    ("C-c c"   . magit-ediff-compare)
 	    ("C"   . magit-checkout)
@@ -644,8 +651,12 @@ https://github.com/bbatsov/projectile
 #+BEGIN_SRC emacs-lisp
   (use-package diff-hl
     :ensure t
+    :bind
+    (("C-z C-M-h" . diff-hl-mode)
+     :map diff-hl-mode-map
+     ("C-x v C-n" . diff-hl-next-hunk)
+     ("C-x v C-p" . diff-hl-previous-hunk))
     )
-
 #+END_SRC
 ** undoing
 #+BEGIN_SRC emacs-lisp
