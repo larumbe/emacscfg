@@ -331,6 +331,7 @@
      ("C-z a" . helm-mark-ring)
      ("C-z C-a" . helm-global-mark-ring)
      ("C-z y" . helm-show-kill-ring)
+     ("C-x a" . helm-mini)
      :map helm-command-map
      ("g" . helm-ag)
      ("C-g" . helm-do-grep-ag)
