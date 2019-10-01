@@ -1174,13 +1174,15 @@ https://github.com/howardabrams/dot-files/blob/master/emacs-python.org
 ** hl line
 #+BEGIN_SRC emacs-lisp
   (use-package hl-line
+    :ensure t
+    :custom
+    (hl-line-sticky-flag t))
+#+END_SRC
 * convenience
 ** scratch buffers 
 #+BEGIN_SRC emacs-lisp
   (use-package scratch
     :ensure t
-    :custom
-    (hl-line-sticky-flag t))
     :bind
     ("C-z C-b" . scratch))
 #+END_SRC
