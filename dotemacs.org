@@ -298,6 +298,7 @@
     :ensure t
     :bind
     (("C-/" . iedit-mode)
+    ("C-M-;" . iedit-mode)
     :map iedit-mode-keymap
     ("M-<tab>" . iedit-prev-occurrence)))
 #+END_SRC
