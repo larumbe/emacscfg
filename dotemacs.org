@@ -391,6 +391,11 @@
 	    ("C-c g C-g" . ggtags-mode)
 	    ("C-z C-r" . helm-gtags-find-rtag)
 	    ("C-z M-u" . helm-gtags-find-tag-other-window))
+      :config
+      (defadvice helm-gtags-dwim (before helm-gtags-widen activate)
+	(progn (if (buffer-narrowed-p) (widen))))
+      (defadvice helm-gtags-pop-stack (before helm-gtags-widen activate)
+	(progn (if (buffer-narrowed-p) (widen))))
       :custom
       (helm-gtags-ignore-case t)
       (helm-gtags-auto-update t)
