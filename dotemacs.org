@@ -620,6 +620,14 @@ https://github.com/bbatsov/projectile
     (("C-z C-y" . helm-yas-complete)))
 #+END_SRC
 
+** counsel
+#+BEGIN_SRC emacs-lisp
+  (use-package counsel
+    :ensure t
+    :bind
+    (("C-q v" . counsel-describe-variable)
+     ("C-q f" . counsel-describe-function)))
+#+END_SRC
 * version control
 ** diffing
 #+BEGIN_SRC emacs-lisp
@@ -718,12 +726,25 @@ https://github.com/bbatsov/projectile
 	  ("C-c f C-e" . hs-toggle-hiding)))
 #+END_SRC
 ** gdb
+** tagging
+*** etags
+#+BEGIN_SRC emacs-lisp
+  (use-package counsel-etags
+    :ensure t
+    :bind
+    (:map emacs-lisp-mode-map
+          ("C-c C-," . counsel-etags-find-tag-at-point)))
+#+END_SRC
 * languages
 ** elisp
 https://www.reddit.com/r/emacs/comments/54pvg4/usepackage_with_builtin_modes/
+
+- [ ] send region to ielm 
+https://caiorss.github.io/Emacs-Elisp-Programming/Elisp_Snippets.html
+
  #+BEGIN_SRC emacs-lisp
    (use-package elisp-mode
-     :load-path "/usr/share/emacs/26.2/lisp/progmodes"
+     :load-path "/home/adrianlarumbe/usr/src/emacs/emacs-26.2/lisp/progmodes"
      :after (company yasnippet)
      :hook
      (emacs-lisp-mode . linum-mode)
@@ -758,10 +779,22 @@ https://www.reddit.com/r/emacs/comments/54pvg4/usepackage_with_builtin_modes/
       ("C-C C-l" . (lambda nil (interactive) (insert "'")))
       ("C-C C-;" . (lambda nil (interactive) (insert ":")))))
  #+END_SRC
+
 *** ielm
 #+BEGIN_SRC emacs-lisp
   (use-package ielm
-    :ensure t)
+    :ensure t
+    :init
+    (defun ielm/send-region ()
+      (interactive)
+      (let ((text (buffer-substring-no-properties (region-beginning)
+						  (region-end))))
+	(with-current-buffer "*ielm*"
+	  (insert text)
+	  (ielm-send-input))))
+    :bind
+    (:map emacs-lisp-mode-map)
+    ("C-c C-c" . ielm/send-region))
 
 #+END_SRC
 *** slime
@@ -769,7 +802,16 @@ https://www.reddit.com/r/emacs/comments/54pvg4/usepackage_with_builtin_modes/
   (use-package elisp-slime-nav
     :ensure t)
 #+END_SRC
+*** debugging
 
+debug
+debug-on-entry
+toggle-debug-on-error
+toggle-debug-on-quit
+edebug-defun
+
+- [ ] https://www.gnu.org/software/emacs/manual/html_node/eintr/Debugging.html
+- [ ] https://www.math.utah.edu/docs/info/emacs-lisp-intro_18.html
 ** cc
 
 Alternatives with irony mode
@@ -951,10 +993,10 @@ https://github.com/howardabrams/dot-files/blob/master/emacs-python.org
   (use-package pyenv-mode-auto
     :ensure t)
 
-  (use-package python-mode
+  (use-package python
     :mode ("\\.py\\'" . python-mode)
     ("\\.wsgi$" . python-mode)
-    :interpreter ("python" . python-mode)
+    ;; :interpreter ("python" . python-mode)
     :init
     (progn
       (use-package company-jedi
@@ -1002,7 +1044,9 @@ https://github.com/howardabrams/dot-files/blob/master/emacs-python.org
     (python-mode . jedi:setup)
     :custom
     (python-shell-interpreter "python3")
-    ;; (python-shell-interpreter "ipython3")
+    ;; (python-shell-interpreter "/usr/bin/ipython3")
+    ;; (python-shell-interpreter-args "-i --simple-promtp")
+
     (jedi:complete-on-adot t))
 
 
@@ -1042,6 +1086,52 @@ https://github.com/howardabrams/dot-files/blob/master/emacs-python.org
     :bind (:map elpy-mode-map ([remap elpy-goto-definition] .
 			       ha/elpy-goto-definition)))
 #+END_SRC
+** rust
+#+BEGIN_SRC emacs-lisp
+  (use-package rust-mode
+    :ensure t
+    :init
+    (use-package racer
+      :ensure t
+      :hook
+      (racer-mode . eldoc-mode)
+      (racer-mode . company-mode))
+    (use-package company-racer
+      :ensure t
+      :bind
+      (:map rust-mode-map
+	    ("C-c c" . company-racer)))
+    (use-package flycheck-rust
+      :ensure t)
+    (use-package cargo
+      :ensure t)
+    :hook
+    (rust-mode . racer-mode)
+    (rust-mode . linum-mode)
+    (rust-mode . which-function-mode)
+    (rust-mode . hl-line-mode)
+    (rust-mode . company-mode)
+    (rust-mode . yas-minor-mode)
+    (rust-mode . flycheck-mode)
+    (rust-mode . rainbow-delimiters-mode)
+    (rust-mode . diff-hl-mode)
+    (rust-mode . superword-mode)
+    (rust-mode . cargo-minor-mode)
+    (rust-mode . racer-mode)
+    :bind
+    (:map rust-mode-map
+	  ("C-c y" . yas/expand)
+	  ("C-c C-y" . helm-yas-complete)
+	  ("C-c M-y" . yas/exit-all-snippets)
+	  ("C-c i" . (lambda () (interactive) (end-of-line) (insert ";")))
+	  ("C-c ;" . (lambda () (interactive) (end-of-line) (insert ";") (newline-and-indent)))
+	  ("C-c o" . (lambda () (interactive) (insert " = ")))
+	  ("C-c u" . (lambda () (interactive) (insert "_")))
+	  ("C-c [" . (lambda () (interactive) (insert "->")))
+	  ("C-c k" . (lambda () (interactive) (insert "&")))))
+
+
+#+END_SRC
 * appearance
 ** theme
 #+BEGIN_SRC emacs-lisp
@@ -1079,9 +1169,15 @@ https://github.com/howardabrams/dot-files/blob/master/emacs-python.org
 ** hl line
 #+BEGIN_SRC emacs-lisp
   (use-package hl-line
+* convenience
+** scratch buffers 
+#+BEGIN_SRC emacs-lisp
+  (use-package scratch
     :ensure t
     :custom
     (hl-line-sticky-flag t))
+    :bind
+    ("C-z C-b" . scratch))
 #+END_SRC
 * programs
 ** browser
