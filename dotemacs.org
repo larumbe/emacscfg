@@ -291,6 +291,12 @@
   (use-package diminish :ensure t)
 #+END_SRC
 * motion
+#+BEGIN_SRC emacs-lisp
+  (use-package avy
+    :ensure t
+    :bind
+    ("C-z C-g" . avy-goto-word-1))
+#+END_SRC
 * search
 ** iedit
 #+BEGIN_SRC emacs-lisp
@@ -980,7 +986,8 @@ Alternatives with irony mode
 
 #+END_SRC
 ** python
-https://github.com/howardabrams/dot-files/blob/master/emacs-python.org
+- [ ] https://github.com/howardabrams/dot-files/blob/master/emacs-python.org
+- [ ] https://docs.python-guide.org/
 
 #+BEGIN_SRC emacs-lisp
   (use-package pyenv-mode
@@ -1108,7 +1115,8 @@ https://github.com/howardabrams/dot-files/blob/master/emacs-python.org
       (:map rust-mode-map
 	    ("C-c c" . company-racer)))
     (use-package flycheck-rust
-      :ensure t)
+      :ensure t
+      :config (add-hook 'flycheck-mode-hook #'flycheck-rust-setup))
     (use-package cargo
       :ensure t)
     :hook
