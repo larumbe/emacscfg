@@ -259,7 +259,7 @@
    (global-set-key (kbd "C-z C-M-s") 'send-invisible)
 
    ;;; going back to latest change
-   (global-set-key (kbd "C-z C-c") 'goto-last-change)
+   (global-set-key (kbd "C-/") 'goto-last-change)
 
    ;; indentation
    (global-set-key (kbd "C-z i") 'indent-relative)
@@ -277,9 +277,6 @@
 
    ;;; subword mode
    (global-set-key (kbd "C-x C-M-w") 'subword-mode)
-
-   ;;; compilation
-   (global-set-key (kbd "C-x C-M-c") (keybinding (switch-to-buffer "*compilation*")))
 
    ;;; quick killing of spurious buffers
    (global-set-key (kbd "C-z 1") 'kill-buffer-other-window)
@@ -303,8 +300,7 @@
   (use-package iedit
     :ensure t
     :bind
-    (("C-/" . iedit-mode)
-    ("C-M-;" . iedit-mode)
+    (("C-M-;" . iedit-mode)
     :map iedit-mode-keymap
     ("M-<tab>" . iedit-prev-occurrence)))
 #+END_SRC
@@ -352,6 +348,7 @@
      ("C-z C-a" . helm-global-mark-ring)
      ("C-z y" . helm-show-kill-ring)
      ("C-x a" . helm-mini)
+     ("C-\\" . helm-buffers-list)
      :map helm-command-map
      ("g" . helm-ag)
      ("C-g" . helm-do-grep-ag)
@@ -673,7 +670,7 @@ https://github.com/bbatsov/projectile
    (use-package magit
      :ensure t
      :bind (("C-z m"   . magit-status)
-	    ("C-z M-d" . magit-dispatch-popup)
+	    ("C-z M-d" . magit-dispatch)
 	    ("C-x g" . nil)
 	    :map magit-mode-map
 	    ("C-c c"   . magit-ediff-compare)
@@ -707,6 +704,11 @@ https://github.com/bbatsov/projectile
      ("C-/" . nil)))
 #+END_SRC
 * programming
+** compilation
+#+BEGIN_SRC emacs-lisp
+  (global-set-key (kbd "C-z C-c") 'compile)
+  (global-set-key (kbd "C-x C-M-c") (keybinding (switch-to-buffer "*compilation*")))
+#+END_SRC
 ** syntax checking
 #+BEGIN_SRC emacs-lisp
   (use-package flycheck
@@ -858,11 +860,21 @@ Alternatives with irony mode
     (c-mode . rainbow-delimiters-mode)
     (c-mode . diff-hl-mode)
     (c-mode . superword-mode)
-    (c-mode . c-turn-on-eldoc-mode)
     (c-mode . helm-gtags-mode)
     (c-mode . hide-ifdef-mode)
+    (c++-mode . linum-mode)
+    (c++-mode . hl-line-mode)
+    (c++-mode . company-mode)
+    (c++-mode . yas-minor-mode)
+    (c++-mode . hs-minor-mode)
+    (c++-mode . rainbow-delimiters-mode)
+    (c++-mode . diff-hl-mode)
+    (c++-mode . superword-mode)
+    (c++-mode . helm-gtags-mode)
+    (c++-mode . hide-ifdef-mode)
+
     :bind
-    (:map c-mode-map
+    (:map c-mode-base-map
 	  ("C-c q" . semantic-ia-show-summary)
 	  ( "C-c w" . semantic-ia-fast-jump)
 	  ( "C-c e" . semantic-ia-show-doc)
