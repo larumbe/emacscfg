@@ -1207,6 +1207,13 @@ Alternatives with irony mode
     :bind
     ("C-z C-b" . scratch))
 #+END_SRC
+** sudo
+#+BEGIN_SRC emacs-lisp
+  (use-package sudo-edit
+    :ensure t
+    :bind
+    ("C-x C-M-u" . sudo-edit))
+#+END_SRC
 * programs
 ** browser
 #+BEGIN_SRC emacs-lisp
