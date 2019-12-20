@@ -13,36 +13,44 @@
 #+BEGIN_SRC emacs-lisp
   (defun narrow-or-widen-dwim (p)
     "Widen if buffer is narrowed, narrow-dwim otherwise.
-  Dwim means: region, org-src-block, org-subtree, or
-  defun, whichever applies first. Narrowing to
-  org-src-block actually calls `org-edit-src-code'.
-  http://endlessparentheses.com/emacs-narrow-or-widen-dwim.html
+    Dwim means: region, org-src-block, org-subtree, or
+    defun, whichever applies first. Narrowing to
+    org-src-block actually calls `org-edit-src-code'.
+    http://endlessparentheses.com/emacs-narrow-or-widen-dwim.html
 
-  With prefix P, don't widen, just narrow even if buffer
-  is already narrowed."
+    With prefix P, don't widen, just narrow even if buffer
+    is already narrowed."
     (interactive "P")
     (declare (interactive-only))
     (cond ((and (buffer-narrowed-p) (not p)) (widen))
-	  ((region-active-p)
-	   (narrow-to-region (region-beginning)
-			     (region-end)))
-	  ((derived-mode-p 'org-mode)
-	   ;; `org-edit-src-code' is not a real narrowing
-	   ;; command. Remove this first conditional if
-	   ;; you don't want it.
-	   (cond ((ignore-errors (org-edit-src-code) t)
-		  (delete-other-windows))
-		 ((ignore-errors (org-narrow-to-block) t))
-		 (t (org-narrow-to-subtree))))
-	  ((derived-mode-p 'latex-mode)
-	   (LaTeX-narrow-to-environment))
-	  (t (narrow-to-defun))))
+          ((region-active-p)
+           (narrow-to-region (region-beginning)
+                             (region-end)))
+          ((derived-mode-p 'org-mode)
+           ;; `org-edit-src-code' is not a real narrowing
+           ;; command. Remove this first conditional if
+           ;; you don't want it.
+           (cond ((ignore-errors (org-edit-src-code) t)
+                  (delete-other-windows))
+                 ((ignore-errors (org-narrow-to-block) t))
+                 (t (org-narrow-to-subtree))))
+          ((derived-mode-p 'latex-mode)
+           (LaTeX-narrow-to-environment))
+          (t (narrow-to-defun))))
 
-  ;;; Open scratch buffer
+    ;;; Open scratch buffer
   (defun switch-to-temporary-buffer ()
     "Switches to scratch temporary buffer"
     (interactive)
     (pop-to-buffer "temp"))
+
+  (defun kill-buffer-other-window ()
+    "Kills buffer in the other window, make sure there are only two of them"
+    (interactive)
+    (other-window 1)
+    (kill-buffer)
+    (other-window 1)
+    (delete-other-windows))
 #+END_SRC
 * basic
 ** defaults
@@ -148,7 +156,7 @@
    (global-set-key (kbd "<C-M-tab>") (keybinding (other-window -1)))
 
      ;;; line truncation
-   (global-set-key (kbd "C-z t") 'toggle-truncate-lines)
+   (global-set-key (kbd "C-x t") 'toggle-truncate-lines)
 
      ;;; killing and marking
    (global-set-key (kbd "C-x w") 'append-next-kill)
@@ -281,6 +289,10 @@
    ;;; quick killing of spurious buffers
    (global-set-key (kbd "C-z 1") 'kill-buffer-other-window)
    (global-set-key (kbd "C-z 0") 'kill-buffer-and-window)
+
+   ;;; filtering
+   (global-set-key (kbd "C-z C-M-k") 'keep-lines)
+   (global-set-key (kbd "C-z C-M-o") 'flush-lines)
  #+END_SRC
 ** packages
 #+BEGIN_SRC emacs-lisp
@@ -329,6 +341,10 @@
     :custom
      aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
 #+END_SRC
+* input
+#+BEGIN_SRC emacs-lisp
+  (global-set-key (kbd "C-x C-\\") 'toggle-input-method)
+#+END_SRC
 * helm
 #+BEGIN_SRC emacs-lisp
   (use-package helm
@@ -340,7 +356,8 @@
     (require 'helm-config)
     :bind
     (("C-l" . helm-command-prefix)
-     ([remap execute-extended-command] . helm-M-x)
+     ;; This is bad, in case you're using an input method and can't type latin characters
+     ;; ([remap execute-extended-command] . helm-M-x)
      ([remap find-file] . helm-find-files)
      ([remap switch-to-buffer] . helm-buffers-list)
      ("C-o" . helm-M-x)
@@ -367,46 +384,46 @@
 #+END_SRC
 
 #+BEGIN_SRC emacs-lisp
-    (use-package helm-gtags
-      :ensure t
-      :hook
-      (dired-mode . helm-gtags-mode)
-      (eshell-mode . helm-gtags-mode)
-      (c-mode . helm-gtags-mode)
-      (c++-mode . helm-gtags-mode)
-      (asm-mode . helm-gtags-mode)
-      :bind
-      (:map helm-gtags-mode-map
-	    ("M-." . helm-gtags-dwim)
-	    ("M-," . helm-gtags-pop-stack)
-	    ("C-c g a" . helm-gtags-tags-in-this-function)
-	    ("C-c j" . helm-gtags-select)
-	    ("M-." . helm-gtags-dwim)
-	    ("M-," . helm-gtags-pop-stack)
-	    ("C-c <" . helm-gtags-previous-history)
-	    ("C-c >" . helm-gtags-next-history)
-	    ("C-c g w" . helm-gtags-clear-stack)
-	    ("C-c g r" . helm-gtags-find-rtag)
-	    ("C-c g s" . helm-gtags-find-symbol)
-	    ("C-c g f" . helm-gtags-parse-file)
-	    ("C-c g o" . helm-gtags-find-tag-other-window)
-	    ("C-c g C-s" . helm-gtags-show-stack)
-	    ("C-c g u" . helm-gtags-update-tags)
-	    ("C-c g C-g" . ggtags-mode)
-	    ("C-z C-r" . helm-gtags-find-rtag)
-	    ("C-z M-u" . helm-gtags-find-tag-other-window))
-      :config
-      (defadvice helm-gtags-dwim (before helm-gtags-widen activate)
-	(progn (if (buffer-narrowed-p) (widen))))
-      (defadvice helm-gtags-pop-stack (before helm-gtags-widen activate)
-	(progn (if (buffer-narrowed-p) (widen))))
-      :custom
-      (helm-gtags-ignore-case t)
-      (helm-gtags-auto-update t)
-      (helm-gtags-use-input-at-cursor t)
-      (helm-gtags-pulse-at-cursor t)
-      (helm-gtags-prefix-key "\C-cg")
-      (helm-gtags-suggested-key-mapping t))
+  (use-package helm-gtags
+    :ensure t
+    :hook
+    (dired-mode . helm-gtags-mode)
+    (eshell-mode . helm-gtags-mode)
+    (c-mode . helm-gtags-mode)
+    (c++-mode . helm-gtags-mode)
+    (asm-mode . helm-gtags-mode)
+    :bind
+    (:map helm-gtags-mode-map
+	  ("M-." . helm-gtags-dwim)
+	  ("M-," . helm-gtags-pop-stack)
+	  ("C-c g a" . helm-gtags-tags-in-this-function)
+	  ("C-c j" . helm-gtags-select)
+	  ("M-." . helm-gtags-dwim)
+	  ("M-," . helm-gtags-pop-stack)
+	  ("C-c <" . helm-gtags-previous-history)
+	  ("C-c >" . helm-gtags-next-history)
+	  ("C-c g w" . helm-gtags-clear-stack)
+	  ("C-c g r" . helm-gtags-find-rtag)
+	  ("C-c g s" . helm-gtags-find-symbol)
+	  ("C-c g f" . helm-gtags-parse-file)
+	  ("C-c g o" . helm-gtags-find-tag-other-window)
+	  ("C-c g C-s" . helm-gtags-show-stack)
+	  ("C-c g u" . helm-gtags-update-tags)
+	  ("C-c g C-g" . ggtags-mode)
+	  ("C-z C-r" . helm-gtags-find-rtag)
+	  ("C-z M-u" . helm-gtags-find-tag-other-window))
+    :config
+    (defadvice helm-gtags-dwim (before helm-gtags-widen activate)
+      (progn (if (buffer-narrowed-p) (widen))))
+    (defadvice helm-gtags-pop-stack (before helm-gtags-widen activate)
+      (progn (if (buffer-narrowed-p) (widen))))
+    :custom
+    (helm-gtags-ignore-case t)
+    (helm-gtags-auto-update t)
+    (helm-gtags-use-input-at-cursor t)
+    (helm-gtags-pulse-at-cursor t)
+    (helm-gtags-prefix-key "\C-cg")
+    (helm-gtags-suggested-key-mapping t))
 
   (use-package helm-rg
     :ensure t
@@ -419,11 +436,17 @@
     :after (helm)
     :bind
     (:map helm-command-map
-    ("w" . helm-swoop)
-    ("C-w" . helm-multi-swoop)))
+	  ("w" . helm-swoop)
+	  ("C-w" . helm-multi-swoop)))
 
   (use-package helm-cscope
-    :ensure t)
+    :ensure t
+    :after (helm)
+    :bind
+    (:map helm-cscope-mode-map
+	  ("M-." . helm-cscope-find-this-symbol-no-prompt)
+	  ("M-," . helm-cscope-pop-mark)
+	  ("C-c e" . helm-cscope-find-calling-this-function-no-prompt)))
 #+END_SRC
 * marking
 #+BEGIN_SRC emacs-lisp
@@ -552,6 +575,10 @@ https://github.com/bbatsov/projectile
     :config
     (helm-projectile-on)
     (projectile-global-mode)
+  
+    (defun my:projectile-grep-buffer-name (args)
+      (interactive "P")
+      (projectile-grep (buffer-name) ))
 
     :bind-keymap
     ("C-c p" . projectile-command-map)
@@ -560,9 +587,12 @@ https://github.com/bbatsov/projectile
     (("C-z p" . helm-projectile-switch-project)
      ("C-z e" . helm-projectile-recentf)
      ("C-z f" . helm-projectile-find-file)
+     ("C-z t" . projectile-dired)
      :map projectile-command-map
 	  ("C-g" . projectile-grep)
-	  ("s r" . projectile-ripgrep))
+	  ("s r" . projectile-ripgrep)
+	  ("s C-r" . rgrep)
+	  ("n" . my:projectile-grep-buffer-name))
 
     :custom
     (projectile-completion-system 'helm)
@@ -707,12 +737,14 @@ https://github.com/bbatsov/projectile
 ** compilation
 #+BEGIN_SRC emacs-lisp
   (global-set-key (kbd "C-z C-c") 'compile)
-  (global-set-key (kbd "C-x C-M-c") (keybinding (switch-to-buffer "*compilation*")))
+  (global-set-key (kbd "C-z C-M-c") (keybinding (switch-to-buffer "*compilation*")))
 #+END_SRC
 ** syntax checking
 #+BEGIN_SRC emacs-lisp
-  (use-package flycheck
-    :ensure t)
+    (use-package flycheck
+      :ensure t
+      :bind
+      ( "C-z w" . flycheck-mode))
 #+END_SRC
 ** hideif
 #+BEGIN_SRC emacs-lisp
@@ -748,6 +780,10 @@ https://github.com/bbatsov/projectile
     :bind
     (:map emacs-lisp-mode-map
           ("C-c C-," . counsel-etags-find-tag-at-point)))
+#+END_SRC
+** debugging
+#+BEGIN_SRC emacs-lisp
+  (global-set-key (kbd "C-x g") 'gdb)
 #+END_SRC
 * languages
 ** elisp
@@ -884,7 +920,7 @@ Alternatives with irony mode
 	  ("C-c C-;" . fa-show)
 	  ("C-c <tab>" . company-gtags)
 	  ("C-c C-h" . company-c-headers)
-	  ("C-c v" . company-complete)
+	  ("C-c v" . company-semantic)
 	  ("C-c C-." . helm-gtags-dwim)
 	  ("C-c C-," . helm-gtags-pop-stack)
 	  ("C-c C-c" . compile)
@@ -979,7 +1015,7 @@ Alternatives with irony mode
     (sh-mode . diff-hl-mode)
     (sh-mode . company-mode)
     (sh-mode . rainbow-delimiters-mode)
-    (sh-mode . flymake-mode)
+    (sh-mode . flycheck-mode)
     :init
     (progn
       (add-to-list 'company-backends 'company-shell))
@@ -1248,9 +1284,25 @@ Alternatives with irony mode
     :bind
     (:map dired-mode-map
 	  ("C-o" . nil)
-	  ("C-c C-o" . dired-display-file)))
+	  ("C-c C-o" . dired-display-file)
+	  ("C-c C-u" . dired-up-directory)))
 #+END_SRC
 * server
 #+BEGIN_SRC emacs-lisp
   (server-start)
+#+END_SRC
+
+* crap
+#+BEGIN_SRC emacs-lisp
+  (global-set-key (kbd "C-x j") 'ripgrep-regexp)
+
+
+(defun my:goto-defun-name ()
+  "Jumps to function name in C"
+  (interactive)
+  (c-beginning-of-defun)
+  (search-forward "(")
+  (backward-word))
+
+(define-key c-mode-map (kbd "C-c h")  'my:goto-defun-name)
 #+END_SRC

@@ -9,6 +9,7 @@
 
 (define-key c-mode-base-map (kbd "C-M-.") 'rtags-find-symbol-at-point)
 (define-key c-mode-base-map (kbd "C-M-,") 'rtags-location-stack-back)
+(define-key c-mode-base-map (kbd "C-c r d") 'rtags-stop-diagnostics)
 
 (require 'helm-rtags)
 (setq rtags-use-helm t)
