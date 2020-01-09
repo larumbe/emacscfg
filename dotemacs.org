@@ -1254,6 +1254,12 @@ Alternatives with irony mode
     :bind
     ("C-x C-M-u" . sudo-edit))
 #+END_SRC
+** which-key
+#+BEGIN_SRC emacs-lisp
+  (use-package which-key
+    :config ;; executed after loading package
+    (which-key-mode))
+#+END_SRC
 * programs
 ** browser
 #+BEGIN_SRC emacs-lisp
