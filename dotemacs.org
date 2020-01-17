@@ -304,7 +304,8 @@
   (use-package avy
     :ensure t
     :bind
-    ("C-z C-g" . avy-goto-word-1))
+    ("C-z C-g" . avy-goto-word-1)
+    ("C-z g" . avy-goto-char-2))
 #+END_SRC
 * search
 ** iedit
@@ -361,6 +362,7 @@
      ([remap find-file] . helm-find-files)
      ([remap switch-to-buffer] . helm-buffers-list)
      ("C-o" . helm-M-x)
+     ("C-z C-e" . helm-M-x)
      ("C-z a" . helm-mark-ring)
      ("C-z C-a" . helm-global-mark-ring)
      ("C-z y" . helm-show-kill-ring)
@@ -373,6 +375,7 @@
      ("u" . helm-unicode)
      ("o" . helm-occur)
      ("n" . helm-register)
+     ("TAB" . helm-imenu)
      :map helm-map
      ("C-w" . backward-kill-word)
      ("C-h" . backward-delete-char))
@@ -437,7 +440,9 @@
     :bind
     (:map helm-command-map
 	  ("w" . helm-swoop)
-	  ("C-w" . helm-multi-swoop)))
+	  ("C-w" . helm-multi-swoop)
+	  :map helm-swoop-map
+	  ("C-w" . backward-kill-word)))
 
   (use-package helm-cscope
     :ensure t
@@ -1282,7 +1287,7 @@ Alternatives with irony mode
     :init
     (define-prefix-command 'google-search nil "Google search: g (Google this), l (Lucky search)")
     :bind
-    (("C-z g" . google-search)
+    (("C-z q" . google-search)
      :map google-search
       ("g" . google-this)
       ("l" . google-this-lucky-search)))
