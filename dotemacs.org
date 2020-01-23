@@ -951,7 +951,7 @@ Alternatives with irony mode
 	      (insert "&")))
 	  ("C-c l" . (lambda () (interactive)
 	      (insert "*")))
-	  ("C-c . " . (lambda () (interactive)
+	  ("C-c ' " . (lambda () (interactive)
 			(insert "%")))
 	  ("C-c y" . yas/expand)
 	  ("C-c C-y" . helm-yas-complete)
