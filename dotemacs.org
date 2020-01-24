@@ -580,10 +580,15 @@ https://github.com/bbatsov/projectile
     :config
     (helm-projectile-on)
     (projectile-global-mode)
-  
+
+    (defun my:projectile-grep-in-buffer-ext ()
+      (interactive)
+      (setq current-prefix-arg '(4))
+      (call-interactively 'projectile-grep))
+
     (defun my:projectile-grep-buffer-name (args)
       (interactive "P")
-      (projectile-grep (buffer-name) ))
+      (projectile-grep (buffer-name)))
 
     :bind-keymap
     ("C-c p" . projectile-command-map)
@@ -597,7 +602,8 @@ https://github.com/bbatsov/projectile
 	  ("C-g" . projectile-grep)
 	  ("s r" . projectile-ripgrep)
 	  ("s C-r" . rgrep)
-	  ("n" . my:projectile-grep-buffer-name))
+	  ("n" . my:projectile-grep-buffer-name)
+	  ("C-r" . my:projectile-grep-in-buffer-ext))
 
     :custom
     (projectile-completion-system 'helm)
