@@ -318,7 +318,14 @@
     ("M-<tab>" . iedit-prev-occurrence)))
 #+END_SRC
 ** anzu
-
+#+BEGIN_SRC emacs-lisp
+(use-package anzu
+  :ensure t ;; install package if not found OR: (setq use-package-always-ensure t)
+  :diminish anzu-mode
+  :config
+  (global-anzu-mode +1)
+)
+#+END_SRC
 * windows
 ** speedbar
  #+BEGIN_SRC emacs-lisp
