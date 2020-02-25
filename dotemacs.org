@@ -1315,6 +1315,20 @@ Alternatives with irony mode
 	  ("C-c C-o" . dired-display-file)
 	  ("C-c C-u" . dired-up-directory)))
 #+END_SRC
+** rss
+#+BEGIN_SRC emacs-lisp
+  (use-package elfeed
+    :ensure t
+    :bind
+    ("C-z C-r" . elfeed))
+
+  (setq elfeed-feeds
+	'(("https://lwn.net/headlines/rss" lwn)
+	  ("https://lobste.rs/rss" lobsters)
+	  ("https://news.ycombinator.com/rss" hackernews)
+	  ("https://www.theregister.co.uk/headlines.atom" register)
+	  ("http://rss.slashdot.org/Slashdot/slashdot" slashdot)))
+#+END_SRC
 * server
 #+BEGIN_SRC emacs-lisp
   (server-start)
