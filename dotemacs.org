@@ -1336,10 +1336,27 @@ Alternatives with irony mode
     :ensure t
     :after (elfeed)
     :demand
- :config
+    :config
     (elfeed-org)
     :custom
     (rmh-elfeed-org-files (list "~/org/elfeed.org")))
+
+  (use-package elfeed-protocol
+    :ensure t
+    :after (elfeed elfeed-org)
+    :demand
+    :config
+    (setq elfeed-protocol-owncloud-maxsize 1000)
+    (setq elfeed-protocol-owncloud-update-with-modified-time t)
+    (elfeed-protocol-enable)
+    (defadvice elfeed (after configure-elfeed-feeds activate)
+      "Make elfeed-org autotags rules works with elfeed-protocol."
+      (setq elfeed-protocol-tags elfeed-feeds)
+      (setq elfeed-feeds (list
+			  (list (format "owncloud+https://%s@cloud.disroot.org" disroot-username)
+				:password '(password-store-get disroot-password))))
+      (setq elfeed-feeds (append elfeed-feeds elfeed-protocol-tags))))
+
 #+END_SRC
 * server
 #+BEGIN_SRC emacs-lisp
