@@ -1278,6 +1278,11 @@ Alternatives with irony mode
     :config ;; executed after loading package
     (which-key-mode))
 #+END_SRC
+** pass
+#+BEGIN_SRC emacs-lisp
+  (use-package password-store
+    :ensure t)
+#+END_SRC
 * programs
 ** browser
 #+BEGIN_SRC emacs-lisp
@@ -1319,15 +1324,22 @@ Alternatives with irony mode
 #+BEGIN_SRC emacs-lisp
   (use-package elfeed
     :ensure t
+    :config
     :bind
-    ("C-z C-r" . elfeed))
+    ("C-z C-r" . elfeed)
+    :custom
+    (elfeed-use-curl t)
+    (elfeed-curl-extra-arguments '("--insecure"))
+    (elfeed-db-directory "~/dropenc/elfeeddb"))
 
-  (setq elfeed-feeds
-	'(("https://lwn.net/headlines/rss" lwn)
-	  ("https://lobste.rs/rss" lobsters)
-	  ("https://news.ycombinator.com/rss" hackernews)
-	  ("https://www.theregister.co.uk/headlines.atom" register)
-	  ("http://rss.slashdot.org/Slashdot/slashdot" slashdot)))
+  (use-package elfeed-org
+    :ensure t
+    :after (elfeed)
+    :demand
+ :config
+    (elfeed-org)
+    :custom
+    (rmh-elfeed-org-files (list "~/org/elfeed.org")))
 #+END_SRC
 * server
 #+BEGIN_SRC emacs-lisp
