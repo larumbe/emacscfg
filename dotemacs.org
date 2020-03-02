@@ -299,6 +299,10 @@
   (use-package dash :ensure t)
   (use-package diminish :ensure t)
 #+END_SRC
+** secrets
+#+BEGIN_SRC emacs-lisp
+(load-file "~/dropenc/secrets.el")
+#+END_SRC
 * motion
 #+BEGIN_SRC emacs-lisp
   (use-package avy
