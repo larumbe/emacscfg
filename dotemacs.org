@@ -311,6 +311,31 @@
     ("C-z C-g" . avy-goto-word-1)
     ("C-z g" . avy-goto-char-2))
 #+END_SRC
+* buffers
+#+BEGIN_SRC emacs-lisp
+(defun my:copy-buffer-name ()
+  (interactive)
+  (kill-new (buffer-name)))
+(global-set-key (kbd "C-z C-M-n") 'my:copy-buffer-name)
+
+(defun my:copy-buffer-name-and-line ()
+  (interactive)
+  (let ((bufnameline (format "%s:%s" (buffer-name) (line-number-at-pos))))
+    (kill-new bufnameline)))
+(global-set-key (kbd "C-z C-M-l") 'my:copy-buffer-name-and-line)
+#+END_SRC
+* fixit
+#+BEGIN_SRC emacs-lisp
+(defun my:upcase-previous-word-thing ()
+  "Upcases the previous word-thingy"
+  (interactive)
+  (mark-a-word-or-thing nil)
+  (upcase-region (region-beginning) (region-end))
+  (forward-word 1))
+
+(global-set-key (kbd "C-z C-u") 'my:upcase-previous-word-thing)
+
+#+END_SRC
 * search
 ** iedit
 #+BEGIN_SRC emacs-lisp
@@ -385,11 +410,15 @@
      ("M-p" . helm-package)
      ("u" . helm-unicode)
      ("o" . helm-occur)
+     ("d" . swiper)
      ("n" . helm-register)
+     ("v" . helm-bookmarks)
      ("TAB" . helm-imenu)
      :map helm-map
      ("C-w" . backward-kill-word)
-     ("C-h" . backward-delete-char))
+     ("C-h" . backward-delete-char)
+     ("C-z C-," . helm-beginning-of-buffer)
+     ("C-z C-." . helm-end-of-buffer))
     :config
     (global-unset-key (kbd "C-x c"))
     (global-set-key (kbd "C-x c") 'delete-other-windows)
@@ -519,6 +548,9 @@
      ("C-c C-," . org-promote-subtree)
      ("C-c C-." . org-demote-subtree)
      ("C-c e" . org-edit-src-code)
+     ("C-c a" . org-archive-subtree)
+     ("C-," . nil)
+     ("C-c n" . org-cycle-agenda-files)
      ("C-c q" . (lambda () (interactive) (insert "|")))
      ("C-c w" . (lambda () (interactive) (insert "|-")))
      ("C-c k" . (lambda () (interactive) (insert "- [ ] " )))
@@ -551,6 +583,8 @@
 						 "" "Reads") "* TODO %?\n %i %T\n")
 			     ("w" "Workflow" entry (file+headline
 						    "" "Workflow") "* TODO %?\n %i %T\n")
+			     ("l" "Learn" entry (file+headline
+						       "" "Learn") "* TODO %?\n %i")
 			     ("j" "Journal" entry (file+datetree
 						   "~/org/journal.org") "* TODO %?\n")
 
@@ -687,9 +721,14 @@ https://github.com/bbatsov/projectile
     :ensure t
     :bind
     (("C-q v" . counsel-describe-variable)
-     ("C-q f" . counsel-describe-function)))
+     ("C-q f" . counsel-describe-function)
+     ("C-,"   . counsel-M-x)))
 #+END_SRC
 * version control
+** vc
+#+BEGIN_SRC emacs-lisp
+(setq vc-follow-symlinks t)
+#+END_SRC
 ** diffing
 #+BEGIN_SRC emacs-lisp
   (use-package ediff
@@ -948,7 +987,7 @@ Alternatives with irony mode
 	  ("C-'" . swiper)
 	  ("C-c <tab>" . company-gtags)
 	  ("C-c C-h" . company-c-headers)
-	  ("C-c v" . company-semantic)
+	  ("C-c C-m" . company-semantic)
 	  ("C-c C-." . helm-gtags-dwim)
 	  ("C-c C-," . helm-gtags-pop-stack)
 	  ("C-c C-c" . compile)
@@ -990,6 +1029,8 @@ Alternatives with irony mode
 	  ("C-c h" . my:goto-defun-name)
 	  ("C-c C-j " . (lambda () (interactive)
 			  (paredit-open-round)))
+	  ("C-c v" . magit-dispatch)
+	  ("C-c C-v" . magit-file-dispatch)
 	  )
     :config
     (global-semanticdb-minor-mode 1)
