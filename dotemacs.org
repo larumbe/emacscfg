@@ -893,19 +893,25 @@ Alternatives with irony mode
 - [ ] https://github.com/Sarcasm/irony-mode
 
 #+BEGIN_SRC emacs-lisp
-  (use-package function-args
+  (use-package company-c-headers
     :ensure t)
 
   (use-package cc-mode
     :ensure t
     :init
     (require 'semantic)
-    (defun my:c-mode-fa-toggle-args ()
-    "Toggle for next arg"
-    (interactive)
-    (fa-show)
-    (fa-show)
-    )
+    (defun my:stop-flycheck ()
+      (flycheck-mode -1)
+      )
+    (remove-hook 'c-mode-hook 'flycheck-mode)
+    (add-hook 'c-mode-common-hook 'my:stop-flycheck)
+    (add-hook 'c-mode-hook 'my:stop-flycheck)
+    (defun my:goto-defun-name ()
+      "Jumps to function name in C"
+      (interactive)
+      (c-beginning-of-defun)
+      (search-forward "(")
+      (backward-word))
     (use-package c-eldoc
       :ensure t)
     :commands (c-mode c++-mode)
@@ -939,7 +945,7 @@ Alternatives with irony mode
 	  ( "C-c C-r" . semantic-add-system-include)
 	  ( "C-c t". semantic-c-add-preprocessor-symbol)
 	  ( "M-<tab>" . moo-complete)
-	  ("C-c C-;" . fa-show)
+	  ("C-'" . swiper)
 	  ("C-c <tab>" . company-gtags)
 	  ("C-c C-h" . company-c-headers)
 	  ("C-c v" . company-semantic)
@@ -981,6 +987,7 @@ Alternatives with irony mode
 	  ("C-c z" . indent-region)
 	  ("C-c b" . sr-speedbar-toggle)
 	  ("C-c n" . c-set-style)
+	  ("C-c h" . my:goto-defun-name)
 	  ("C-c C-j " . (lambda () (interactive)
 			  (paredit-open-round)))
 	  )
@@ -990,11 +997,15 @@ Alternatives with irony mode
     (global-semantic-stickyfunc-mode 1)
     (global-semantic-decoration-mode 1)
     (semantic-mode 1)
+    (add-to-list 'company-backends 'company-c-headers)
+    (flycheck-mode -1)
+
     :custom
     (c-basic-offset 8)
     (tab-width 8)
     (indent-tabs-mode t)
     )
+
 
 #+END_SRC
 ** makefile
