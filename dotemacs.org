@@ -1047,6 +1047,11 @@ Alternatives with irony mode
     (indent-tabs-mode t)
     )
 
+  (use-package eglot
+    :ensure t
+    :bind
+    (:map eglot-mode-map
+	  ("C-M-/" . xref-find-references)))
 
 #+END_SRC
 ** makefile
