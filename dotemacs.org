@@ -237,7 +237,8 @@
    ;;; appearance
    (global-set-key (kbd "C-z M-l") 'load-theme)
    (load-theme 'deeper-blue t)
-   (set-frame-font "Hack-14" nil t)
+   ;; (set-frame-font "Hack-14" nil t)
+   (set-frame-font "-CTDB-Fira Code-semibold-normal-normal-*-*-*-*-*-d-0-iso10646-1" nil t)
 
    ;;; shell
    (global-set-key (kbd "C-z ;") 'shell-command)
