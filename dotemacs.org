@@ -723,7 +723,8 @@ https://github.com/bbatsov/projectile
     :bind
     (("C-q v" . counsel-describe-variable)
      ("C-q f" . counsel-describe-function)
-     ("C-,"   . counsel-M-x)))
+     ("C-,"   . counsel-M-x)
+     ("C-x d" . counsel-dired)))
 #+END_SRC
 * version control
 ** vc
