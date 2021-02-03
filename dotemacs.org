@@ -725,6 +725,11 @@ https://github.com/bbatsov/projectile
      ("C-q f" . counsel-describe-function)
      ("C-,"   . counsel-M-x)
      ("C-x d" . counsel-dired)))
+
+  (use-package counsel-projectile
+    :ensure t
+    :config
+    (define-key projectile-mode-map (kbd "C-c ,") 'projectile-command-map))
 #+END_SRC
 * version control
 ** vc
